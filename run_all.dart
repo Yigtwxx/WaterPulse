@@ -26,3 +26,4 @@ Future<void> main() async {
   print("✅ Frontend launched.");
   print("\nWaterPulse is now running! 💧");
 }
+ 
