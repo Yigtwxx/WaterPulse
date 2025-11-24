@@ -1,5 +1,5 @@
 # backend/app/api/v1/routes_water.py
-from datetime import date
+from datetime import date, datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -35,13 +35,42 @@ def add_water_log(
     return log
 
 
+@router.get("/logs/{user_id}", response_model=List[WaterLogOut])
+def list_logs(
+    user_id: int,
+    date_str: Optional[str] = Query(default=None, description="YYYY-MM-DD"),
+    db: Session = Depends(get_db),
+):
+    """
+    Belirli bir günün tüm loglarını döner (UI'da gün detayını göstermek için).
+    Tarih verilmezse bugün.
+    """
+    if date_str:
+        target_date = date.fromisoformat(date_str)
+    else:
+        target_date = date.today()
+
+    start_dt = datetime.combine(target_date, datetime.min.time())
+    end_dt = datetime.combine(target_date, datetime.max.time())
+
+    logs = (
+        db.query(models.water_log.WaterLog)
+        .filter(models.water_log.WaterLog.user_id == user_id)
+        .filter(models.water_log.WaterLog.timestamp >= start_dt)
+        .filter(models.water_log.WaterLog.timestamp <= end_dt)
+        .order_by(models.water_log.WaterLog.timestamp.asc())
+        .all()
+    )
+
+    return logs
+
+
 @router.get("/daily-total/{user_id}", response_model=DailyTotalOut)
 def get_daily_total(
     user_id: int,
     date_str: Optional[str] = Query(default=None, description="YYYY-MM-DD"),
     db: Session = Depends(get_db),
 ):
-    # Tarih verilmezse bugün
     if date_str:
         target_date = date.fromisoformat(date_str)
     else:
@@ -58,7 +87,7 @@ def get_daily_total(
         .first()
     )
 
-    total = q[1] if q else 0
+    total = int(q[1]) if q else 0
 
     return DailyTotalOut(date=target_date, total_ml=total)
 
@@ -86,4 +115,4 @@ def get_calendar_totals(
         .all()
     )
 
-    return [DailyTotalOut(date=r[0], total_ml=r[1]) for r in rows]
+    return [DailyTotalOut(date=r[0], total_ml=int(r[1])) for r in rows]
