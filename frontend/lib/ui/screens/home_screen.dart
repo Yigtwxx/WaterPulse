@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentMl = 0;
 
   // Günlük hedef
-  int _goalMl = 2400;
+  final int _goalMl = 2400;
 
   // API çağrısı sırasında loading flag
   bool _loading = false;
@@ -82,93 +82,56 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Quick actions tıklamaları (şimdilik sadece SnackBar)
+  // Quick actions tıklamaları -> ilgili taba geç
   void _onAchievementsTap() {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('Achievements is coming soon ✨')),
-      );
+    setState(() => _selectedTabIndex = 2);
   }
 
   void _onFriendsTap() {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('Friends is coming soon ✨')),
-      );
+    setState(() => _selectedTabIndex = 1);
   }
-
-  void _onCalendarTap() {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('Calendar view is coming soon ✨')),
-      );
-  }
-
+// ignore: unused_element
   void _onSportsTap() {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('Sports tracking is coming soon ✨')),
-      );
+    setState(() => _selectedTabIndex = 3);
+  }
+
+  // Calendar butonu -> DatePicker aç
+  void _onCalendarTap() {
+    if (!mounted) return;
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(DateTime.now().year - 1),
+      lastDate: DateTime(DateTime.now().year + 1),
+    ).then((selectedDate) {
+      if (!mounted || selectedDate == null) return;
+
+      final formatted =
+          '${selectedDate.day.toString().padLeft(2, '0')}.${selectedDate.month.toString().padLeft(2, '0')}.${selectedDate.year}';
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Selected date: $formatted')),
+        );
+    });
   }
 
   // BottomNavigationBar item seçilince
   void _onTabSelected(int index) {
+    if (!mounted) return;
     setState(() => _selectedTabIndex = index);
-
-    // Şimdilik sadece SnackBar ile davranış veriyoruz.
-    // İleride gerçek sayfalara navigate edebilirsin.
-    switch (index) {
-      case 0:
-        // Home zaten burası, ekstra bir şey yapmıyoruz.
-        break;
-      case 1:
-        _onFriendsTap();
-        break;
-      case 2:
-        _onAchievementsTap();
-        break;
-      case 3:
-        _onSportsTap();
-        break;
-    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // ÜST BAR
-      appBar: AppBar(
-        title: const Text('WaterPulse'),
-        centerTitle: true,
-        elevation: 0,
-        // Sağ üstte profil ikonu
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person_outline),
-            onPressed: () {
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  const SnackBar(
-                    content: Text('Profile screen is coming soon ✨'),
-                  ),
-                );
-            },
-          ),
-        ],
-      ),
-
-      // GÖVDE
-      body: SafeArea(
-        child: Container(
+  // Seçili taba göre gövdeyi üret
+  Widget _buildBody(BuildContext context) {
+    switch (_selectedTabIndex) {
+      case 0:
+        // HOME TAB (orijinal içerik)
+        return Container(
           color: const Color(0xfff5f7fb),
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -373,7 +336,68 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-        ),
+        );
+
+      case 1:
+        // FRIENDS TAB
+        return const _TabPlaceholder(
+          icon: Icons.group_rounded,
+          title: 'Friends',
+          description:
+              'Here you will soon see your friends, leaderboards and challenges.',
+        );
+
+      case 2:
+        // ACHIEVEMENTS TAB
+        return const _TabPlaceholder(
+          icon: Icons.emoji_events_rounded,
+          title: 'Achievements',
+          description:
+              'Your streaks, badges and milestones will be listed here soon.',
+        );
+
+      case 3:
+        // SPORTS TAB
+        return const _TabPlaceholder(
+          icon: Icons.fitness_center_rounded,
+          title: 'Sports',
+          description:
+              'Water tracking integrated with your sports activities will appear here.',
+        );
+
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // ÜST BAR
+      appBar: AppBar(
+        title: const Text('WaterPulse'),
+        centerTitle: true,
+        elevation:0,
+        // Sağ üstte profil ikonu
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_outline),
+            onPressed: () {
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  const SnackBar(
+                    content: Text('Profile screen is coming soon ✨'),
+                  ),
+                );
+            },
+          ),
+        ],
+      ),
+
+      // GÖVDE
+      body: SafeArea(
+        child: _buildBody(context),
       ),
 
       // ==========================
@@ -408,7 +432,7 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 // =======================================================
-// HIZLI EKLEME BUTONU WIDGET'I
+// HIZLI EKLEME BUTONU WIDGET'I (Ripple basma efekti ile)
 // =======================================================
 class _AmountButton extends StatelessWidget {
   final String label;
@@ -422,32 +446,38 @@ class _AmountButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onTap != null;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 32.0, vertical: 10.0),
-        decoration: BoxDecoration(
-          color: enabled ? Colors.white : Colors.grey[200],
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            color: enabled ? Colors.blueAccent : Colors.grey,
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(30),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(30),
+        child: Container(
+          padding:
+              const EdgeInsets.symmetric(horizontal: 32.0, vertical: 10.0),
+          decoration: BoxDecoration(
+            color: enabled ? Colors.white : Colors.grey[200],
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: enabled ? Colors.blueAccent : Colors.grey,
+            ),
+            boxShadow: enabled
+                ? [
+                    BoxShadow(
+                      color: Colors.blueAccent.withValues(alpha: 0.08),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [],
           ),
-          boxShadow: enabled
-              ? [
-                  BoxShadow(
-                    color: Colors.blueAccent.withValues(alpha: 0.08),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [],
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: enabled ? Colors.blueAccent : Colors.grey,
-            fontWeight: FontWeight.w600,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: enabled ? Colors.blueAccent : Colors.grey,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),
@@ -528,6 +558,59 @@ class _QuickActionCard extends StatelessWidget {
 
             // Sağdaki ">" oku
             const Icon(Icons.chevron_right, color: Colors.grey),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =======================================================
+// TAB PLACEHOLDER WIDGET'İ (Friends / Achievements / Sports)
+// =======================================================
+class _TabPlaceholder extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+
+  const _TabPlaceholder({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xfff5f7fb),
+      padding: const EdgeInsets.all(16),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 52,
+              color: Colors.blueAccent,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.w600),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: Colors.grey[700]),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
