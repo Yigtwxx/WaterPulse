@@ -3,8 +3,11 @@
 // WaterPulse ana ekranı (Home tab).
 // - Üstte günlük su ilerlemesi
 // - Ortada hızlı ekleme butonları (+250 / +500)
+// - Sağ üstte profil ikonu
+// - Profil ikonunun altında Calendar butonu
 // - Suggestions bölümü
-// - Quick actions: Achievements / Friends / Calendar
+// - Quick actions: Achievements / Friends
+// - En altta BottomNavigationBar: Home / Friends / Achievements / Sports
 
 import 'package:flutter/material.dart';
 import 'package:waterpulse/services/local_db/dao/api_client.dart';
@@ -29,6 +32,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // API çağrısı sırasında loading flag
   bool _loading = false;
+
+  // BottomNavigationBar seçili tab
+  // 0: Home, 1: Friends, 2: Achievements, 3: Sports
+  int _selectedTabIndex = 0;
 
   @override
   void initState() {
@@ -103,6 +110,37 @@ class _HomeScreenState extends State<HomeScreen> {
       );
   }
 
+  void _onSportsTap() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(content: Text('Sports tracking is coming soon ✨')),
+      );
+  }
+
+  // BottomNavigationBar item seçilince
+  void _onTabSelected(int index) {
+    setState(() => _selectedTabIndex = index);
+
+    // Şimdilik sadece SnackBar ile davranış veriyoruz.
+    // İleride gerçek sayfalara navigate edebilirsin.
+    switch (index) {
+      case 0:
+        // Home zaten burası, ekstra bir şey yapmıyoruz.
+        break;
+      case 1:
+        _onFriendsTap();
+        break;
+      case 2:
+        _onAchievementsTap();
+        break;
+      case 3:
+        _onSportsTap();
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('WaterPulse'),
         centerTitle: true,
         elevation: 0,
-        // Sağ üstte profil ikonu (Profile tab yerine buradan da erişebilirsin)
+        // Sağ üstte profil ikonu
         actions: [
           IconButton(
             icon: const Icon(Icons.person_outline),
@@ -138,6 +176,34 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ==========================
+                // PROFİL ALTINDA CALENDAR BUTONU
+                // ==========================
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: _onCalendarTap,
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      foregroundColor: Colors.blueAccent,
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    icon: const Icon(
+                      Icons.calendar_today_outlined,
+                      size: 18,
+                    ),
+                    label: const Text('Calendar'),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // ==========================
                 // 1) ÜST KART (PROGRESS + BUTONLAR)
                 // ==========================
                 Container(
@@ -163,8 +229,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 8),
 
                       // Ortadaki büyük dairesel progress
-                      // Burada sadece WaterProgressBar kullanıyoruz,
-                      // ekstra text overlay yapmıyoruz ki "çift yazı" olmasın.
                       SizedBox(
                         height: 180,
                         child: Center(
@@ -217,8 +281,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -250,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 24),
 
                 // ==========================
-                // 3) QUICK ACTIONS (Achievements / Friends / Calendar)
+                // 3) QUICK ACTIONS (Achievements / Friends)
                 // ==========================
                 Text(
                   'Quick actions',
@@ -261,14 +327,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   builder: (context, constraints) {
                     final isWide = constraints.maxWidth > 700;
 
-                    // Kart listesi
+                    // Kart listesi (Calendar artık burada yok, yukarıda buton olarak duruyor)
                     final cards = [
-                      _QuickActionCard(
-                        icon: Icons.emoji_events_outlined,
-                        title: 'Achievements',
-                        subtitle: 'Track your streaks & badges',
-                        onTap: _onAchievementsTap,
-                      ),
                       _QuickActionCard(
                         icon: Icons.group_outlined,
                         title: 'Friends',
@@ -276,15 +336,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: _onFriendsTap,
                       ),
                       _QuickActionCard(
-                        icon: Icons.calendar_today_outlined,
-                        title: 'Calendar',
-                        subtitle: 'See your monthly history',
-                        onTap: _onCalendarTap,
+                        icon: Icons.emoji_events_outlined,
+                        title: 'Achievements',
+                        subtitle: 'Track your streaks & badges',
+                        onTap: _onAchievementsTap,
                       ),
                     ];
 
                     if (isWide) {
-                      // Desktop / geniş ekran: 3 kart yan yana, Calendar sağda
+                      // Desktop / geniş ekran: 2 kart yan yana
                       return Row(
                         children: cards
                             .map(
@@ -305,8 +365,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           cards[0],
                           const SizedBox(height: 12),
                           cards[1],
-                          const SizedBox(height: 12),
-                          cards[2],
                         ],
                       );
                     }
@@ -317,8 +375,34 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      // Alt taraftaki bottom navigation bar (Home / Stats / Profile)
-      // main.dart içerisinde tanımlı, burada ayrıca eklemeye gerek yok.
+
+      // ==========================
+      // BOTTOM NAVIGATION BAR
+      // Home / Friends / Achievements / Sports
+      // ==========================
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedTabIndex,
+        onTap: _onTabSelected,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_rounded),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group_rounded),
+            label: 'Friends',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.emoji_events_rounded),
+            label: 'Achievements',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.fitness_center_rounded),
+            label: 'Sports',
+          ),
+        ],
+      ),
     );
   }
 }
