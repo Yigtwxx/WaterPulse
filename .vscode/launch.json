@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run WaterPulse (Backend + Frontend)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_all.dart",
+      "runtimeExecutable": "dart"
+    }
+  ]
+}
