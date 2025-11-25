@@ -13,9 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:waterpulse/services/api_client.dart';
 import 'package:waterpulse/ui/widgets/water_progress_bar.dart';
 
-
-
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -56,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       setState(() => _currentMl = total);
     } catch (_) {
-      // Şimdilik hata durumunu sessiz geçiyoruz
+      // Şimdilik hata durumunu sessiz geçiyoruz (0 kalabilir)
     } finally {
       if (mounted) {
         setState(() => _loading = false);
@@ -65,23 +62,43 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Belirtilen miktarda su ekle (ör: 250 ml, 500 ml)
+  // Backend çalışsa da çalışmasa da UI'da animasyonu gösteriyoruz.
   Future<void> _addWater(int amount) async {
     if (!mounted) return;
     setState(() => _loading = true);
 
+    bool serverOk = false;
+
     try {
+      // 1) Backend'e isteği gönder
       await apiClient.addWater(userId: 1, amountMl: amount);
-      if (!mounted) return;
-      await _loadTodayTotal(); // Ekledikten sonra güncel değeri çek
+      serverOk = true;
     } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not add water')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _loading = false);
+      serverOk = false;
+    }
+
+    if (!mounted) return;
+
+    if (serverOk) {
+      // 2A) Backend başarılı -> gerçek veriyi tekrar çek
+      try {
+        await _loadTodayTotal();
+      } catch (_) {
+        // backend cevapta sorun çıkarırsa local fallback
+        setState(() {
+          _currentMl = (_currentMl + amount).clamp(0, _goalMl);
+        });
       }
+    } else {
+      // 2B) Backend'e ulaşılamadı -> local olarak artır (UI animasyonu için)
+      setState(() {
+        _currentMl = (_currentMl + amount).clamp(0, _goalMl);
+      });
+      // Artık SnackBar göstermiyoruz, sessizce local güncelliyoruz.
+    }
+
+    if (mounted) {
+      setState(() => _loading = false);
     }
   }
 
@@ -192,42 +209,48 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 30),
 
-                      // Ortadaki büyük dairesel progress
-                      SizedBox(
-                        height: 180,
-                        child: Center(
-                          child: WaterProgressBar(
-                            currentMl: _currentMl,
-                            goalMl: _goalMl,
-                          ),
+                      // Ortadaki büyük dairesel progress (tam ortalı)
+                      Center(
+                        child: WaterProgressBar(
+                          currentMl: _currentMl,
+                          goalMl: _goalMl,
                         ),
                       ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 30),
 
-                      // Hızlı ekleme butonları
+                      // Hızlı ekleme butonları (tam ortalı ve eşit genişlik)
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _AmountButton(
-                            label: '+250 ml',
-                            onTap: _loading ? null : () => _addWater(250),
+                          SizedBox(
+                            width: 130,
+                            child: _AmountButton(
+                              label: '+250 ml',
+                              onTap: _loading ? null : () => _addWater(250),
+                            ),
                           ),
-                          _AmountButton(
-                            label: '+500 ml',
-                            onTap: _loading ? null : () => _addWater(500),
+                          const SizedBox(width: 30),
+                          SizedBox(
+                            width: 130,
+                            child: _AmountButton(
+                              label: '+500 ml',
+                              onTap: _loading ? null : () => _addWater(500),
+                            ),
                           ),
                         ],
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
 
-                      // Hedef metni
+                      // Hedef metni (tam ortalı)
                       Text(
                         'Goal: $_goalMl ml',
+                        textAlign: TextAlign.center,
                         style: Theme.of(context)
                             .textTheme
                             .bodyMedium
@@ -294,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   builder: (context, constraints) {
                     final isWide = constraints.maxWidth > 700;
 
-                    // Kart listesi (Calendar artık burada yok, yukarıda buton olarak duruyor)
+                    // Kart listesi
                     final cards = [
                       _QuickActionCard(
                         icon: Icons.group_outlined,
@@ -317,8 +340,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             .map(
                               (c) => Expanded(
                                 child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 4),
                                   child: c,
                                 ),
                               ),
@@ -476,11 +499,13 @@ class _AmountButton extends StatelessWidget {
                   ]
                 : [],
           ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: enabled ? Colors.blueAccent : Colors.grey,
-              fontWeight: FontWeight.w600,
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: enabled ? Colors.blueAccent : Colors.grey,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),
