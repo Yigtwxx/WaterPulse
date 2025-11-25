@@ -5,7 +5,10 @@ import 'package:http/http.dart' as http;
 class ApiClient {
   // Backend development adresi
   static const String baseUrl = 'http://localhost:8000/api/v1';
+  // Eğer Android emülatörde test ediyorsan:
+  // static const String baseUrl = 'http://10.0.2.2:8000/api/v1';
 
+  // Bugünkü toplam su miktarını getir
   Future<int> getTodayTotal({int userId = 1}) async {
     final uri = Uri.parse('$baseUrl/water/daily-total/$userId');
     final res = await http.get(uri);
@@ -18,6 +21,7 @@ class ApiClient {
     }
   }
 
+  // Belirtilen miktarda su ekle (ör: 250 ml, 500 ml)
   Future<void> addWater({int userId = 1, required int amountMl}) async {
     final uri = Uri.parse('$baseUrl/water/log');
     final body = jsonEncode({

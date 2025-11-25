@@ -42,8 +42,8 @@ class WaterProgressBar extends StatelessWidget {
                 boxShadow: [
                   BoxShadow(
                     // 🔵 DAMLANIN ETRAFINDAKİ MAVİ PARLAMA
-                    // (sadece rengi değiştirdim, blur/offset aynı)
-                    color: const Color.fromARGB(255, 39, 135, 226).withOpacity(0.20),
+                    color: const Color.fromARGB(255, 39, 135, 226)
+                        .withOpacity(0.20),
                     blurRadius: 2000,
                     offset: const Offset(0, 8),
                   ),

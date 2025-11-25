@@ -10,8 +10,11 @@
 // - En altta BottomNavigationBar: Home / Friends / Achievements / Sports
 
 import 'package:flutter/material.dart';
-import 'package:waterpulse/services/local_db/dao/api_client.dart';
+import 'package:waterpulse/services/api_client.dart';
 import 'package:waterpulse/ui/widgets/water_progress_bar.dart';
+
+
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -92,7 +95,8 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
     setState(() => _selectedTabIndex = 1);
   }
-// ignore: unused_element
+
+  // ignore: unused_element
   void _onSportsTap() {
     if (!mounted) return;
     setState(() => _selectedTabIndex = 3);
@@ -377,7 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('WaterPulse'),
         centerTitle: true,
-        elevation:0,
+        elevation: 0,
         // Sağ üstte profil ikonu
         actions: [
           IconButton(
