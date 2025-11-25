@@ -12,6 +12,7 @@
 import 'package:flutter/material.dart';
 import 'package:waterpulse/services/api_client.dart';
 import 'package:waterpulse/ui/widgets/water_progress_bar.dart';
+import 'package:waterpulse/ui/screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,8 +28,8 @@ class _HomeScreenState extends State<HomeScreen> {
   // Bugünkü içilen su miktarı
   int _currentMl = 0;
 
-  // Günlük hedef
-  final int _goalMl = 2400;
+  // Günlük hedef (ARTIK DEĞİŞEBİLİR)
+  int _goalMl = 2400;
 
   // API çağrısı sırasında loading flag
   bool _loading = false;
@@ -401,26 +402,59 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // ÜST BAR
-      appBar: AppBar(
-        title: const Text('WaterPulse'),
-        centerTitle: true,
-        elevation: 0,
-        // Sağ üstte profil ikonu
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person_outline),
-            onPressed: () {
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  const SnackBar(
-                    content: Text('Profile screen is coming soon ✨'),
-                  ),
-                );
-            },
-          ),
-        ],
+appBar: AppBar(
+  title: const Text('WaterPulse'),
+  centerTitle: true,
+  elevation: 0,
+  actions: [
+    IconButton(
+      tooltip: 'Profile',
+      // Küçük yuvarlak avatarlı buton
+      icon: const CircleAvatar(
+        radius: 16,
+        backgroundColor: Color(0xFFE5EDFF),
+        child: Icon(
+          Icons.person,
+          size: 18,
+          color: Color(0xFF2563EB),
+        ),
       ),
+      onPressed: () async {
+        // ProfileScreen'den yeni goal değerini bekle
+        final int? newGoal = await Navigator.of(context).push<int>(
+          MaterialPageRoute(
+            builder: (_) => const ProfileScreen(),
+          ),
+        );
+
+        // Eğer profil ekranı bir değer döndürmediyse (back tuşu vs.)
+        if (!mounted) return;
+        if (newGoal == null) {
+          // Bunu görürsen, ProfileScreen tarafı Navigator.pop(context, _dailyGoal)
+          // ile dönmüyor demektir.
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(
+                content: Text('No goal returned from ProfileScreen'),
+              ),
+            );
+          return;
+        }
+
+        // Değer geldiyse state'i güncelle
+        setState(() {
+          _goalMl = newGoal;
+          if (_currentMl > _goalMl) {
+            _currentMl = _goalMl;
+          }
+        });
+      },
+    ),
+    const SizedBox(width: 8),
+  ],
+),
+
 
       // GÖVDE
       body: SafeArea(

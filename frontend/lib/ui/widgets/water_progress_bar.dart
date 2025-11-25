@@ -6,7 +6,7 @@
 
 import 'package:flutter/material.dart';
 
-class WaterProgressBar extends StatelessWidget {
+class WaterProgressBar extends StatefulWidget {
   final int currentMl;
   final int goalMl;
 
@@ -17,10 +17,34 @@ class WaterProgressBar extends StatelessWidget {
   });
 
   @override
+  State<WaterProgressBar> createState() => _WaterProgressBarState();
+}
+
+class _WaterProgressBarState extends State<WaterProgressBar>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _rainController;
+
+  @override
+  void initState() {
+    super.initState();
+    _rainController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(); // sürekli yukarıdan damlacık gelsin
+  }
+
+  @override
+  void dispose() {
+    _rainController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // 0.0 - 1.0 arası ilerleme
-    final double targetProgress =
-        goalMl == 0 ? 0.0 : (currentMl / goalMl).clamp(0.0, 1.0);
+    final double targetProgress = widget.goalMl == 0
+        ? 0.0
+        : (widget.currentMl / widget.goalMl).clamp(0.0, 1.0);
 
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0.0, end: targetProgress),
@@ -32,7 +56,7 @@ class WaterProgressBar extends StatelessWidget {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 💧 Büyük damla alanı + glow
+            // 💧 Büyük damla alanı + glow + yukarıdan gelen damlacıklar
             Container(
               width: 160,
               height: 160,
@@ -49,9 +73,22 @@ class WaterProgressBar extends StatelessWidget {
                   ),
                 ],
               ),
-              child: CustomPaint(
-                size: const Size(130, 150),
-                painter: _WaterDropPainter(clamped),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Ana damla + içinin dolma efekti (senin painter)
+                  CustomPaint(
+                    size: const Size(130, 150),
+                    painter: _WaterDropPainter(clamped),
+                  ),
+
+                  // Üstten gelen küçük damlacıklar (overlay)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: _RainOverlay(animation: _rainController),
+                    ),
+                  ),
+                ],
               ),
             ),
 
@@ -59,7 +96,7 @@ class WaterProgressBar extends StatelessWidget {
 
             // Yazı: "X / Y ml"
             Text(
-              '$currentMl / $goalMl ml',
+              '${widget.currentMl} / ${widget.goalMl} ml',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: const Color(0xff111827),
@@ -72,7 +109,26 @@ class WaterProgressBar extends StatelessWidget {
   }
 }
 
-// --- GÜNCELLENEN PAINTER SINIFI ---
+/// Yukarıdan sürekli gelen minik damlacıklar
+class _RainOverlay extends StatelessWidget {
+  final Animation<double> animation;
+
+  const _RainOverlay({required this.animation});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        return CustomPaint(
+          painter: _RaindropsPainter(animation.value),
+        );
+      },
+    );
+  }
+}
+
+// --- MEVCUT DAMLA PAINTER'IN (HİÇ BOZMADIM, SADECE AYNEN KULLANIYORUZ) ---
 class _WaterDropPainter extends CustomPainter {
   final double progress; // 0.0 - 1.0
 
@@ -92,7 +148,7 @@ class _WaterDropPainter extends CustomPainter {
     // 2. Sol taraf: Hafifçe dışa açılıp aşağı inen gövde
     dropPath.cubicTo(
       w * 0.05, h * 0.20, // Kontrol 1: Sol üst
-      0, h * 0.55,        // Kontrol 2: Sol orta (daha geniş)
+      0, h * 0.55, // Kontrol 2: Sol orta (daha geniş)
       w * 0.10, h * 0.80, // Bitiş: Alt kıvrımın başlangıcı
     );
 
@@ -105,9 +161,9 @@ class _WaterDropPainter extends CustomPainter {
 
     // 4. Sağ taraf: Tepeye dönüş
     dropPath.cubicTo(
-      w * 1.0, h * 0.4,  // Kontrol 1: Sağ orta
+      w * 1.0, h * 0.4, // Kontrol 1: Sağ orta
       w * 0.75, h * 0.4, // Kontrol 2: Tepeye yakın
-      w * 0.45, 0,        // Bitiş: Başlangıç
+      w * 0.45, 0, // Bitiş: Başlangıç
     );
 
     dropPath.close();
@@ -186,5 +242,50 @@ class _WaterDropPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _WaterDropPainter oldDelegate) {
     return oldDelegate.progress != progress;
+  }
+}
+
+/// Küçük damlaları çizen painter
+class _RaindropsPainter extends CustomPainter {
+  final double t; // 0.0 - 1.0 arasında loop eden zaman
+
+  _RaindropsPainter(this.t);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double w = size.width;
+    final double h = size.height;
+
+    final Paint dropPaint = Paint()
+      ..color = const Color.fromARGB(255, 34, 133, 254).withOpacity(0.65)
+      ..style = PaintingStyle.fill;
+
+    // 3 küçük damla, faz kaydırmalı (her biri farklı faz)
+    final List<double> offsets = [0.0, 0.33, 0.66];
+    final List<double> xs = [w * 0.35, w * 0.50, w * 0.65];
+
+    for (int i = 0; i < offsets.length; i++) {
+      final double phase = (t + offsets[i]) % 1.0;
+
+      // Yukarıdan aşağıya y pozisyonu (biraz damlanın ortalarında kaybolsun)
+      final double startY = -20;
+      final double endY = h * 0.45;
+      final double y = startY + (endY - startY) * phase;
+
+      final double x = xs[i];
+
+      // Küçük damlanın boyutu (hafif nefes efekti)
+      final double minR = 3.0;
+      final double maxR = 6.0;
+      final double r = minR + (maxR - minR) * (0.5 + 0.5 * (1 - (phase - 0.5).abs() * 2));
+
+      // küçük daire/damla
+      canvas.drawCircle(Offset(x, y), r, dropPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _RaindropsPainter oldDelegate) {
+    return oldDelegate.t != t;
   }
 }
