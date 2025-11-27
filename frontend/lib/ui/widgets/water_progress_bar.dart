@@ -155,7 +155,7 @@ class _WaterDropPainter extends CustomPainter {
     // 3. Alt taraf: DAHA YUVARLAK VE GENİŞ TABAN
     dropPath.cubicTo(
       w * 0.20, h * 1.15, // Kontrol 1: Sol alt (aşağı ve geniş)
-      w * 0.80, h * 1.15, // Kontrol 2: Sağ alt (aşağı ve geniş)
+      w * 0.80, h * 1.15 , // Kontrol 2: Sağ alt (aşağı ve geniş)
       w * 0.92, h * 0.80, // Bitiş: Sağ kıvrımın başlangıcı
     );
 
