@@ -39,4 +39,54 @@ class ApiClient {
       throw Exception('Failed to add water');
     }
   }
+
+  Future<Map<String, dynamic>> getStreakSummary({int userId = 1}) async {
+    final uri = Uri.parse('$baseUrl/streaks/$userId/summary');
+    final res = await http.get(uri);
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    }
+    throw Exception('Failed to load streak summary');
+  }
+
+  Future<List<dynamic>> getAchievements({int userId = 1}) async {
+    final uri = Uri.parse('$baseUrl/achievements/$userId');
+    final res = await http.get(uri);
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as List<dynamic>;
+    }
+    throw Exception('Failed to load achievements');
+  }
+
+  Future<List<dynamic>> getAvatarSkins({int userId = 1}) async {
+    final uri = Uri.parse('$baseUrl/avatar/skins/$userId');
+    final res = await http.get(uri);
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as List<dynamic>;
+    }
+    throw Exception('Failed to load avatar skins');
+  }
+
+  Future<List<dynamic>> compareWithFriends({
+    required int userId,
+    required List<int> friendIds,
+    required DateTime date,
+  }) async {
+    final uri = Uri.parse('$baseUrl/friends/compare');
+    final body = jsonEncode({
+      'user_id': userId,
+      'friend_ids': friendIds,
+      'date': date.toIso8601String().split('T').first,
+    });
+
+    final res = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as List<dynamic>;
+    }
+    throw Exception('Failed to compare friends');
+  }
 }

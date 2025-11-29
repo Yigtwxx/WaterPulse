@@ -33,15 +33,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // API çağrısı sırasında loading flag
   bool _loading = false;
+  bool _metaLoading = false;
+  bool _achievementsLoading = false;
+  bool _friendsLoading = false;
 
   // BottomNavigationBar seçili tab
   // 0: Home, 1: Friends, 2: Achievements, 3: Sports
   int _selectedTabIndex = 0;
 
+  Map<String, dynamic>? _streakSummary;
+  List<dynamic> _achievements = [];
+  List<dynamic> _avatarSkins = [];
+  List<dynamic> _friendLeaderboard = [];
+
   @override
   void initState() {
     super.initState();
     _loadTodayTotal();
+    _loadMetaPanels();
+    _loadAchievements();
+    _loadFriendLeaderboard();
   }
 
   // Bugünkü toplam su miktarını backend’den çek
@@ -58,6 +69,68 @@ class _HomeScreenState extends State<HomeScreen> {
     } finally {
       if (mounted) {
         setState(() => _loading = false);
+      }
+    }
+  }
+
+  Future<void> _loadMetaPanels() async {
+    if (!mounted) return;
+    setState(() => _metaLoading = true);
+    try {
+      final summary = await apiClient.getStreakSummary(userId: 1);
+      final skins = await apiClient.getAvatarSkins(userId: 1);
+      if (!mounted) return;
+      setState(() {
+        _streakSummary = summary;
+        _avatarSkins = skins;
+      });
+    } catch (_) {
+      // sessiz devam
+    } finally {
+      if (mounted) {
+        setState(() => _metaLoading = false);
+      }
+    }
+  }
+
+  Future<void> _loadAchievements() async {
+    if (!mounted) return;
+    setState(() => _achievementsLoading = true);
+    try {
+      final data = await apiClient.getAchievements(userId: 1);
+      if (!mounted) return;
+      setState(() => _achievements = data);
+    } catch (_) {
+      // sessiz devam
+    } finally {
+      if (mounted) {
+        setState(() => _achievementsLoading = false);
+      }
+    }
+  }
+
+  Future<void> _loadFriendLeaderboard() async {
+    if (!mounted) return;
+    setState(() => _friendsLoading = true);
+    try {
+      final today = DateTime.now();
+      final data = await apiClient.compareWithFriends(
+        userId: 1,
+        friendIds: const [2, 3],
+        date: today,
+      );
+      if (!mounted) return;
+      data.sort(
+        (a, b) => ((b['total_ml'] as num?)?.toInt() ?? 0).compareTo(
+          (a['total_ml'] as num?)?.toInt() ?? 0,
+        ),
+      );
+      setState(() => _friendLeaderboard = data);
+    } catch (_) {
+      // sessiz devam
+    } finally {
+      if (mounted) {
+        setState(() => _friendsLoading = false);
       }
     }
   }
@@ -97,6 +170,8 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       // Artık SnackBar göstermiyoruz, sessizce local güncelliyoruz.
     }
+
+    await _loadMetaPanels();
 
     if (mounted) {
       setState(() => _loading = false);
@@ -361,6 +436,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
                   },
                 ),
+
+                const SizedBox(height: 24),
+
+                Text(
+                  'Streak & avatar',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 12),
+                _StreakCard(
+                  loading: _metaLoading,
+                  summary: _streakSummary,
+                  skins: _avatarSkins,
+                ),
               ],
             ),
           ),
@@ -368,20 +456,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
       case 1:
         // FRIENDS TAB
-        return const _TabPlaceholder(
-          icon: Icons.group_rounded,
-          title: 'Friends',
-          description:
-              'Here you will soon see your friends, leaderboards and challenges.',
+        return _FriendsTab(
+          loading: _friendsLoading,
+          leaderboard: _friendLeaderboard,
+          onRefresh: _loadFriendLeaderboard,
         );
 
       case 2:
         // ACHIEVEMENTS TAB
-        return const _TabPlaceholder(
-          icon: Icons.emoji_events_rounded,
-          title: 'Achievements',
-          description:
-              'Your streaks, badges and milestones will be listed here soon.',
+        return _AchievementsTab(
+          loading: _achievementsLoading,
+          achievements: _achievements,
+          onRefresh: _loadAchievements,
         );
 
       case 3:
@@ -423,7 +509,7 @@ appBar: AppBar(
         // ProfileScreen'den yeni goal değerini bekle
         final int? newGoal = await Navigator.of(context).push<int>(
           MaterialPageRoute(
-            builder: (_) => const ProfileScreen(),
+            builder: (_) => ProfileScreen(initialGoal: _goalMl),
           ),
         );
 
@@ -621,6 +707,482 @@ class _QuickActionCard extends StatelessWidget {
 
             // Sağdaki ">" oku
             const Icon(Icons.chevron_right, color: Colors.grey),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =======================================================
+// STREAK + AVATAR KARTI
+// =======================================================
+class _StreakCard extends StatelessWidget {
+  final bool loading;
+  final Map<String, dynamic>? summary;
+  final List<dynamic> skins;
+
+  const _StreakCard({
+    required this.loading,
+    required this.summary,
+    required this.skins,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final currentStreak = summary?['current_streak'] ?? 0;
+    final bestStreak = summary?['best_streak'] ?? 0;
+    final todayTotal = summary?['today_total_ml'] ?? 0;
+    final goal = summary?['goal_ml'] ?? 0;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: loading
+          ? const SizedBox(
+              height: 80,
+              child: Center(child: CircularProgressIndicator()),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _StatTile(
+                        label: 'Current streak',
+                        value: '$currentStreak days',
+                        icon: Icons.local_fire_department_outlined,
+                        color: Colors.orange.shade400,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _StatTile(
+                        label: 'Best streak',
+                        value: '$bestStreak days',
+                        icon: Icons.military_tech_outlined,
+                        color: Colors.indigo.shade400,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  goal > 0 ? 'Today: $todayTotal / $goal ml' : 'Today: $todayTotal ml',
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(color: Colors.grey[700], fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Avatar skins',
+                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                if (skins.isEmpty)
+                  Text(
+                    'No skins yet',
+                    style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                  )
+                else
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: skins
+                        .map((s) => _SkinChip(
+                              name: s['name']?.toString() ?? 'Skin',
+                              colorHex: s['color']?.toString(),
+                              unlocked: s['is_unlocked'] == true,
+                              active: s['is_active'] == true,
+                            ))
+                        .toList(),
+                  ),
+              ],
+            ),
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _StatTile({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            padding: const EdgeInsets.all(8),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: Colors.grey[700])),
+                Text(
+                  value,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class _SkinChip extends StatelessWidget {
+  final String name;
+  final String? colorHex;
+  final bool unlocked;
+  final bool active;
+
+  const _SkinChip({
+    required this.name,
+    required this.colorHex,
+    required this.unlocked,
+    required this.active,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColor = _colorFromHex(colorHex) ?? Colors.blueAccent;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: baseColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: active ? baseColor : baseColor.withOpacity(0.35),
+          width: active ? 1.6 : 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            active ? Icons.check_circle : Icons.opacity_outlined,
+            size: 16,
+            color: baseColor,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            name,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: unlocked ? Colors.grey[800] : Colors.grey,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color? _colorFromHex(String? hex) {
+    if (hex == null) return null;
+    final cleaned = hex.replaceAll('#', '');
+    if (cleaned.length == 6) {
+      return Color(int.parse('0xFF$cleaned'));
+    }
+    return null;
+  }
+}
+
+// =======================================================
+// FRIENDS TAB
+// =======================================================
+class _FriendsTab extends StatelessWidget {
+  final bool loading;
+  final List<dynamic> leaderboard;
+  final Future<void> Function() onRefresh;
+
+  const _FriendsTab({
+    required this.loading,
+    required this.leaderboard,
+    required this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xfff5f7fb),
+      padding: const EdgeInsets.all(16),
+      child: RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Friends leaderboard',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                IconButton(
+                  tooltip: 'Refresh',
+                  onPressed: loading ? null : onRefresh,
+                  icon: const Icon(Icons.refresh),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (loading)
+              const Center(child: Padding(
+                padding: EdgeInsets.all(24),
+                child: CircularProgressIndicator(),
+              ))
+            else if (leaderboard.isEmpty)
+              Text(
+                'No friends yet. Add some to compare!',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: Colors.grey[700]),
+              )
+            else
+              ...leaderboard.asMap().entries.map(
+                (entry) {
+                  final idx = entry.key;
+                  final item = entry.value as Map<String, dynamic>;
+                  final name = item['username']?.toString() ?? 'Friend';
+                  final total = item['total_ml'] ?? 0;
+                  final isMe = item['user_id'] == 1;
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: const Color(0xFFE5EDFF),
+                          child: Text(
+                            '${idx + 1}',
+                            style: const TextStyle(
+                              color: Color(0xFF2563EB),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isMe ? '$name (You)' : name,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '$total ml today',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(color: Colors.grey[700]),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right, color: Colors.grey),
+                      ],
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =======================================================
+// ACHIEVEMENTS TAB
+// =======================================================
+class _AchievementsTab extends StatelessWidget {
+  final bool loading;
+  final List<dynamic> achievements;
+  final Future<void> Function() onRefresh;
+
+  const _AchievementsTab({
+    required this.loading,
+    required this.achievements,
+    required this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xfff5f7fb),
+      padding: const EdgeInsets.all(16),
+      child: RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Achievements',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                IconButton(
+                  tooltip: 'Refresh',
+                  onPressed: loading ? null : onRefresh,
+                  icon: const Icon(Icons.refresh),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (loading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (achievements.isEmpty)
+              Text(
+                'Unlock achievements by completing your daily goals.',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: Colors.grey[700]),
+              )
+            else
+              ...achievements.map((a) {
+                final map = a as Map<String, dynamic>;
+                final title = map['title']?.toString() ?? 'Achievement';
+                final desc =
+                    map['description']?.toString() ?? 'Keep hydrating!';
+                final points = map['points'] ?? 0;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.emoji_events, color: Colors.amber),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              desc,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(color: Colors.grey[700]),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '$points pts',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF92400E),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
           ],
         ),
       ),
