@@ -202,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
+                        color: Colors.black.withOpacity(0.04),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),
@@ -281,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
+                        color: Colors.black.withOpacity(0.03),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -526,7 +526,7 @@ class _AmountButton extends StatelessWidget {
             boxShadow: enabled
                 ? [
                     BoxShadow(
-                      color: Colors.blueAccent.withValues(alpha: 0.08),
+                      color: Colors.blueAccent.withOpacity(0.08),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -576,7 +576,7 @@ class _QuickActionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: Colors.black.withOpacity(0.04),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -588,7 +588,7 @@ class _QuickActionCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.08),
+                color: Colors.blue.withOpacity(0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: Colors.blueAccent),
