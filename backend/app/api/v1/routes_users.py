@@ -46,6 +46,14 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
     return user
 
 
+@router.post("/login", response_model=UserOut)
+def login(username: str, db: Session = Depends(get_db)):
+    user = db.query(models.user.User).filter(models.user.User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
 @router.get("/{user_id}", response_model=UserOut)
 def get_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(models.user.User).filter(models.user.User.id == user_id).first()

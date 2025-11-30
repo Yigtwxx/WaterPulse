@@ -11,8 +11,11 @@ from app import models
 from app.schemas.water_schemas import (
     WaterLogCreate,
     WaterLogOut,
+    WaterLogOut,
     DailyTotalOut,
 )
+from app.services import achievement_service
+from app.schemas.achievement_schemas import AchievementCreate
 
 router = APIRouter(prefix="/water", tags=["water"])
 
@@ -32,6 +35,34 @@ def add_water_log(
     db.add(log)
     db.commit()
     db.refresh(log)
+
+    # Check for daily goal achievement
+    today = date.today()
+    daily_total = (
+        db.query(func.sum(models.water_log.WaterLog.amount_ml))
+        .filter(models.water_log.WaterLog.user_id == log_in.user_id)
+        .filter(func.date(models.water_log.WaterLog.timestamp) == today)
+        .scalar()
+    ) or 0
+
+    if daily_total >= user.daily_goal_ml:
+        try:
+            achievement_title = f"Daily Goal Reached: {today.isoformat()}"
+            # Check if already exists
+            if achievement_service.ensure_unique_title(db, log_in.user_id, achievement_title):
+                achievement_service.create_achievement(
+                    db,
+                    AchievementCreate(
+                        user_id=log_in.user_id,
+                        title=achievement_title,
+                        description="You reached your daily water intake goal!",
+                        points=10
+                    )
+                )
+        except Exception as e:
+            print(f"Failed to create achievement: {e}")
+            # Do not fail the request, as water log is already saved
+
     return log
 
 

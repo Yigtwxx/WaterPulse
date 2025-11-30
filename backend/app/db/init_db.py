@@ -64,6 +64,10 @@ def init_db() -> None:
             achievements = [
                 dict(user_id=1, title="Day One", description="First water log", points=10),
                 dict(user_id=1, title="Hydration Rookie", description="500 ml in a day", points=20),
+                dict(user_id=1, title="Streak 1 day", description="Complete goal 1 day in a row", points=30),
+                dict(user_id=1, title="Streak 7 days", description="Complete goal 7 days in a row", points=50),
+                dict(user_id=1, title="Streak 30 days", description="Complete goal 30 days in a row", points=80),
+                dict(user_id=1, title="Streak 90 days", description="Complete goal 90 days in a row", points=120),
             ]
             db.add_all(models.achievement.Achievement(**a) for a in achievements)
             db.commit()
@@ -86,6 +90,19 @@ def init_db() -> None:
                         timestamp=datetime.combine(day, datetime.min.time()),
                     )
                 )
+        # 1 günlük streak anında olsun diye bugüne ekstra kayıt
+        extra_today = db.query(models.water_log.WaterLog).filter(
+            models.water_log.WaterLog.user_id == 1,
+            func.date(models.water_log.WaterLog.timestamp) == today,
+        ).first()
+        if not extra_today:
+            db.add(
+                models.water_log.WaterLog(
+                    user_id=1,
+                    amount_ml=1200,
+                    timestamp=datetime.combine(today, datetime.min.time()),
+                )
+            )
         db.commit()
 
         # Arkadaş ilişkisi örneği
