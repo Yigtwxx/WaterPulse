@@ -1,2 +1,2 @@
 # backend/uvicorn_run.ps1
-uvicorn app.main:app --reload
+c:\Users\Asus\Desktop\WaterPulse\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
