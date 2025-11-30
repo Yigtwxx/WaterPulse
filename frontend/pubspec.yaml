@@ -12,6 +12,9 @@ dependencies:
   http: ^1.2.0
   window_size: ^0.1.0
   shared_preferences: ^2.2.2
+  flutter_riverpod: ^2.5.1
+  go_router: ^13.2.0
+  fl_chart: ^0.66.2
 
 dev_dependencies:
   flutter_test:
