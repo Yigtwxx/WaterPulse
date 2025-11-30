@@ -3,3 +3,6 @@ uvicorn[standard]
 SQLAlchemy
 pydantic[email]
 python-multipart
+matplotlib
+seaborn
+pandas

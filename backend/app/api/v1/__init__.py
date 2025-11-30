@@ -8,6 +8,7 @@ from . import (
     routes_avatar,
     routes_streaks,
     routes_achievements,
+    routes_stats,
 )
 
 api_router = APIRouter()
@@ -17,3 +18,4 @@ api_router.include_router(routes_friends.router)
 api_router.include_router(routes_avatar.router)
 api_router.include_router(routes_streaks.router)
 api_router.include_router(routes_achievements.router)
+api_router.include_router(routes_stats.router, prefix="/stats", tags=["stats"])
