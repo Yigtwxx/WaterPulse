@@ -28,7 +28,13 @@ def calculate_streaks(db: Session, user_id: int) -> Tuple[int, int, int, int, da
         .all()
     )
 
-    totals = {r.d: int(r.total) for r in rows}
+    # SQLite func.date returns string, ensure we have date objects
+    totals = {}
+    for r in rows:
+        d_val = r.d
+        if isinstance(d_val, str):
+            d_val = date.fromisoformat(d_val)
+        totals[d_val] = int(r.total)
 
     current = 0
     today = date.today()
