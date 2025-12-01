@@ -7,6 +7,8 @@
 // - Basit "Save" butonu (şimdilik local)
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:waterpulse/services/api_client.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key, required this.initialGoal});
@@ -18,14 +20,170 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  // Şimdilik sahte veriler (backend bağlayınca buraya entegre edersin)
+  final ApiClient _apiClient = ApiClient();
   late int _dailyGoal;
   bool _notificationsEnabled = true;
+
+  // User state
+  bool _isLoggedIn = false;
+  String _username = "Guest";
+  int? _userId;
 
   @override
   void initState() {
     super.initState();
     _dailyGoal = widget.initialGoal;
+    _loadUserState();
+  }
+
+  Future<void> _loadUserState() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userId = prefs.getInt('userId');
+      _username = prefs.getString('username') ?? "Guest";
+      _isLoggedIn = _userId != null;
+    });
+  }
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('userId');
+    await prefs.remove('username');
+    setState(() {
+      _userId = null;
+      _username = "Guest";
+      _isLoggedIn = false;
+    });
+  }
+
+  Future<void> _showLoginDialog() async {
+    final TextEditingController usernameController = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Log In'),
+        content: TextField(
+          controller: usernameController,
+          decoration: const InputDecoration(hintText: "Enter username"),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final username = usernameController.text.trim();
+              if (username.isEmpty) return;
+
+              try {
+                final user = await _apiClient.login(username);
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setInt('userId', user['id']);
+                await prefs.setString('username', user['username']);
+                
+                if (mounted) {
+                  Navigator.pop(context);
+                  _loadUserState();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Welcome back, ${user['username']}!')),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Login failed. User not found?')),
+                  );
+                }
+              }
+            },
+            child: const Text('Log In'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showSignupDialog() async {
+    final TextEditingController usernameController = TextEditingController();
+    final TextEditingController weightController = TextEditingController();
+    final TextEditingController heightController = TextEditingController();
+    final TextEditingController ageController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sign Up'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: usernameController,
+                decoration: const InputDecoration(labelText: "Username"),
+              ),
+              TextField(
+                controller: weightController,
+                decoration: const InputDecoration(labelText: "Weight (kg)"),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: heightController,
+                decoration: const InputDecoration(labelText: "Height (cm)"),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: ageController,
+                decoration: const InputDecoration(labelText: "Age"),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final username = usernameController.text.trim();
+              if (username.isEmpty) return;
+
+              try {
+                final userData = {
+                  "username": username,
+                  "weight_kg": double.tryParse(weightController.text),
+                  "height_cm": double.tryParse(heightController.text),
+                  "age": int.tryParse(ageController.text),
+                  "daily_goal_ml": 2000, // Default
+                };
+
+                final user = await _apiClient.createUser(userData);
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setInt('userId', user['id']);
+                await prefs.setString('username', user['username']);
+
+                if (mounted) {
+                  Navigator.pop(context);
+                  _loadUserState();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Account created! Welcome, ${user['username']}!')),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Signup failed: $e')),
+                  );
+                }
+              }
+            },
+            child: const Text('Sign Up'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -56,15 +214,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const CircleAvatar(
-                      radius: 32,
-                      backgroundColor: Color(0xFFE5EDFF),
-                      child: Icon(
-                        Icons.person,
-                        size: 32,
-                        color: Color(0xFF2563EB),
-                      ),
-                    ),
+                    const _WaterAvatar(),
                     const SizedBox(width: 16),
 
                     // İsim + açıklama
@@ -73,7 +223,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'WaterPulse User',
+                            _isLoggedIn ? _username : 'Guest User',
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
@@ -83,7 +233,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             children: [
                               Flexible(
                                 child: Text(
-                                  'Stay hydrated and keep your streaks alive',
+                                  _isLoggedIn
+                                      ? 'Keep hydrating, $_username!'
+                                      : 'Log in to sync your data',
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: Colors.grey[600],
                                   ),
@@ -101,46 +253,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(width: 12),
 
                     // Login / Sign up butonları
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, _dailyGoal),
-                          child: const Text('Log in'),
-                        ),
-                        const SizedBox(width: 8),
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF2563EB),
-                            side: const BorderSide(
-                              color: Color(0xFF2563EB),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
+                    if (!_isLoggedIn)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextButton(
+                            onPressed: _showLoginDialog,
+                            child: const Text('Log in'),
                           ),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context)
-                              ..hideCurrentSnackBar()
-                              ..showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'Sign up screen will be added soon ✨'),
-                                ),
-                              );
-                          },
-                          child: const Text('Sign up'),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: 8),
+                          OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF2563EB),
+                              side: const BorderSide(
+                                color: Color(0xFF2563EB),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                            onPressed: _showSignupDialog,
+                            child: const Text('Sign up'),
+                          ),
+                        ],
+                      )
+                    else
+                      IconButton(
+                        onPressed: _logout,
+                        icon: const Icon(Icons.logout, color: Colors.redAccent),
+                        tooltip: "Log out",
+                      ),
                   ],
                 ),
 
                 const SizedBox(height: 24),
+                // ==== SETTINGS BÖLÜMÜ ====
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Settings',
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                const SizedBox(height: 12),
 
                 // ==== GÜNLÜK HEDEF KARTI ====
                 _ProfileCard(
@@ -226,6 +386,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _WaterAvatar extends StatelessWidget {
+  const _WaterAvatar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 64,
+      height: 64,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: const Color(0xFFE5EDFF),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.10),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: const [
+          Icon(
+            Icons.water_drop,
+            size: 36,
+            color: Color(0xFF2563EB),
+          ),
+          Positioned(
+            bottom: 12,
+            child: Icon(
+              Icons.emoji_emotions_outlined,
+              size: 12,
+              color: Colors.white,
+            ),
+          ),
+        ],
       ),
     );
   }
