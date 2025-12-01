@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:waterpulse/core/widgets/scaffold_with_nav_bar.dart';
 import 'package:waterpulse/features/home/home_screen.dart';
 import 'package:waterpulse/features/home/screens/achievements_screen.dart';
+import 'package:waterpulse/features/datas/screens/datas_screen.dart';
 import 'package:waterpulse/features/social/friends_screen.dart';
 
 // Private navigators
@@ -10,6 +11,7 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'shellHome');
 final _shellNavigatorFriendsKey = GlobalKey<NavigatorState>(debugLabel: 'shellFriends');
 final _shellNavigatorAchievementsKey = GlobalKey<NavigatorState>(debugLabel: 'shellAchievements');
+final _shellNavigatorDatasKey = GlobalKey<NavigatorState>(debugLabel: 'shellDatas');
 final _shellNavigatorSportsKey = GlobalKey<NavigatorState>(debugLabel: 'shellSports');
 
 final router = GoRouter(
@@ -60,7 +62,22 @@ final router = GoRouter(
           ],
         ),
 
-        // 4) Sports Branch (Placeholder)
+
+
+        // 4) Datas Branch
+        StatefulShellBranch(
+          navigatorKey: _shellNavigatorDatasKey,
+          routes: [
+            GoRoute(
+              path: '/datas',
+              pageBuilder: (context, state) => const NoTransitionPage(
+                child: DatasScreen(),
+              ),
+            ),
+          ],
+        ),
+
+        // 5) Sports Branch (Placeholder)
         StatefulShellBranch(
           navigatorKey: _shellNavigatorSportsKey,
           routes: [
