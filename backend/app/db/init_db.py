@@ -6,6 +6,8 @@ from app.db.session import SessionLocal
 from app import models
 
 
+from app.core.security import get_password_hash
+
 def init_db() -> None:
     """
     Uygulama ilk kez ayağa kalktığında demo verileri oluşturur.
@@ -17,7 +19,10 @@ def init_db() -> None:
         users = [
             dict(
                 id=1,
-                username="waterpulse_demo",
+                email="demo@waterpulse.com",
+                hashed_password=get_password_hash("123456"),
+                name="Demo",
+                surname="User",
                 weight_kg=70,
                 height_cm=175,
                 age=28,
@@ -29,14 +34,20 @@ def init_db() -> None:
             ),
             dict(
                 id=2,
-                username="friend_anna",
+                email="anna@example.com",
+                hashed_password=get_password_hash("123456"),
+                name="Anna",
+                surname="Friend",
                 daily_goal_ml=2000,
                 preferred_cup_ml=200,
                 language="en",
             ),
             dict(
                 id=3,
-                username="friend_bob",
+                email="bob@example.com",
+                hashed_password=get_password_hash("123456"),
+                name="Bob",
+                surname="Friend",
                 daily_goal_ml=2200,
                 preferred_cup_ml=250,
                 language="en",
