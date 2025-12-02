@@ -6,8 +6,9 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app import models
-from app.schemas.user_schemas import UserCreate, UserOut, UserUpdate
+from app.schemas.user_schemas import UserCreate, UserOut, UserUpdate, UserLogin
 from app.utils.calc_water_goal import calculate_daily_goal_ml
+from app.core.security import get_password_hash, verify_password
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -16,11 +17,11 @@ router = APIRouter(prefix="/users", tags=["users"])
 def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
     existing = (
         db.query(models.user.User)
-        .filter(models.user.User.username == user_in.username)
+        .filter(models.user.User.email == user_in.email)
         .first()
     )
     if existing:
-        raise HTTPException(status_code=400, detail="Username already exists")
+        raise HTTPException(status_code=400, detail="Email already registered")
 
     # Eğer weight_kg varsa ve daily_goal explicitly gönderilmemişse otomatik hesapla
     daily_goal = user_in.daily_goal_ml
@@ -29,8 +30,13 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
             user_in.weight_kg, user_in.activity_level
         )
 
+    hashed_pw = get_password_hash(user_in.password)
+
     user = models.user.User(
-        username=user_in.username,
+        email=user_in.email,
+        hashed_password=hashed_pw,
+        name=user_in.name,
+        surname=user_in.surname,
         weight_kg=user_in.weight_kg,
         height_cm=user_in.height_cm,
         age=user_in.age,
@@ -47,10 +53,14 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=UserOut)
-def login(username: str, db: Session = Depends(get_db)):
-    user = db.query(models.user.User).filter(models.user.User.username == username).first()
+def login(user_in: UserLogin, db: Session = Depends(get_db)):
+    user = db.query(models.user.User).filter(models.user.User.email == user_in.email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    if not verify_password(user_in.password, user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect password")
+
     return user
 
 
