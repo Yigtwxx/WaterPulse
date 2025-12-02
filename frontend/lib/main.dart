@@ -4,28 +4,54 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:window_size/window_size.dart' as window_size;
 import 'package:waterpulse/config/app_theme.dart';
+import 'package:waterpulse/services/notification_service.dart';
+import 'package:waterpulse/features/settings/providers/theme_provider.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:waterpulse/core/router.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:waterpulse/l10n/generated/app_localizations.dart';
+import 'package:waterpulse/features/settings/providers/language_provider.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     // Masaüstünde pencereyi çok küçültemeyelim
     window_size.setWindowMinSize(const Size(1100, 720));
   }
+  // Initialize Notification Service
+  final notificationService = NotificationService();
+  await notificationService.init();
+  await notificationService.schedulePeriodicNotification();
+
   runApp(const ProviderScope(child: WaterPulseApp()));
 }
 
-class WaterPulseApp extends StatelessWidget {
+class WaterPulseApp extends ConsumerWidget {
   const WaterPulseApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
+    final locale = ref.watch(languageProvider);
+
     return MaterialApp.router(
       title: 'WaterPulse',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
+      locale: locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('tr'),
+      ],
       routerConfig: router,
     );
   }
