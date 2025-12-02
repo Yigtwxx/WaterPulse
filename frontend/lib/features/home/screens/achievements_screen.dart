@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:waterpulse/features/home/providers/achievements_provider.dart';
+import 'package:waterpulse/l10n/generated/app_localizations.dart';
 
 class AchievementsScreen extends ConsumerWidget {
   const AchievementsScreen({super.key});
@@ -13,9 +14,23 @@ class AchievementsScreen extends ConsumerWidget {
     final currentStreak = state.currentStreak;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Achievements')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.achievements)),
       body: Container(
-        color: const Color(0xfff5f7fb),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? [
+                    const Color(0xFF0F172A),
+                    const Color(0xFF1E293B),
+                  ]
+                : [
+                    const Color(0xFFEFF6FF),
+                    const Color(0xFFFFFFFF),
+                  ],
+          ),
+        ),
         padding: const EdgeInsets.all(16),
         child: RefreshIndicator(
           onRefresh: () => ref.read(achievementsProvider.notifier).loadData(),
@@ -26,7 +41,7 @@ class AchievementsScreen extends ConsumerWidget {
               _StreakMedallions(currentStreak: currentStreak),
               const SizedBox(height: 24),
               Text(
-                'All Achievements',
+                AppLocalizations.of(context)!.allAchievements,
                 style: Theme.of(context)
                     .textTheme
                     .titleMedium
@@ -36,11 +51,12 @@ class AchievementsScreen extends ConsumerWidget {
               if (loading)
                 const Center(child: CircularProgressIndicator())
               else if (achievements.isEmpty)
-                const Text('No achievements yet')
+                Text(AppLocalizations.of(context)!.noAchievements)
               else
                 ...achievements.map((a) {
                   final name = a['name'] ?? 'Unknown';
-                  final desc = a['description'] ?? '';
+                  final desc = _localizeAchievementDesc(
+                      context, a['description']?.toString());
                   final unlocked = a['is_unlocked'] == true;
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
@@ -66,6 +82,33 @@ class AchievementsScreen extends ConsumerWidget {
       ),
     );
   }
+
+  String _localizeAchievementDesc(BuildContext context, String? backendDesc) {
+    if (backendDesc == null) return '';
+    // Backend'den gelen string ile eşleşme
+    if (backendDesc.contains('daily water intake goal')) {
+      return AppLocalizations.of(context)!.achGoalReached;
+    }
+    if (backendDesc.contains('First water log')) {
+      return AppLocalizations.of(context)!.achFirstLog;
+    }
+    if (backendDesc.contains('500 ml')) {
+      return AppLocalizations.of(context)!.ach500ml;
+    }
+    if (backendDesc.contains('goal 1 day')) {
+      return AppLocalizations.of(context)!.achGoal1Day;
+    }
+    if (backendDesc.contains('goal 7 days')) {
+      return AppLocalizations.of(context)!.achGoal7Days;
+    }
+    if (backendDesc.contains('goal 30 days')) {
+      return AppLocalizations.of(context)!.achGoal30Days;
+    }
+    if (backendDesc.contains('goal 90 days')) {
+      return AppLocalizations.of(context)!.achGoal90Days;
+    }
+    return backendDesc;
+  }
 }
 
 class _StreakMedallions extends StatelessWidget {
@@ -76,17 +119,29 @@ class _StreakMedallions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tiers = [
-      _Medallion(label: "1 gün", days: 1, current: currentStreak),
-      _Medallion(label: "7 gün", days: 7, current: currentStreak),
-      _Medallion(label: "30 gün", days: 30, current: currentStreak),
-      _Medallion(label: "90 gün", days: 90, current: currentStreak),
+      _Medallion(
+          label: AppLocalizations.of(context)!.dayStreak(1),
+          days: 1,
+          current: currentStreak),
+      _Medallion(
+          label: AppLocalizations.of(context)!.dayStreak(7),
+          days: 7,
+          current: currentStreak),
+      _Medallion(
+          label: AppLocalizations.of(context)!.dayStreak(30),
+          days: 30,
+          current: currentStreak),
+      _Medallion(
+          label: AppLocalizations.of(context)!.dayStreak(90),
+          days: 90,
+          current: currentStreak),
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Streak medallions',
+          AppLocalizations.of(context)!.streakMedallions,
           style: Theme.of(context)
               .textTheme
               .titleSmall
@@ -119,7 +174,11 @@ class _Medallion extends StatelessWidget {
     final unlocked = current >= days;
     final progress = (current / days).clamp(0.0, 1.0);
     final color = unlocked ? const Color(0xFF2563EB) : Colors.grey;
-    final bgColor = unlocked ? const Color(0xFFE5EDFF) : Colors.white;
+    final bgColor = unlocked
+        ? (Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF1E293B)
+            : const Color(0xFFE5EDFF))
+        : Theme.of(context).cardTheme.color;
     final borderColor = unlocked ? color.withOpacity(0.9) : color.withOpacity(0.3);
 
     return Container(
@@ -171,7 +230,9 @@ class _Medallion extends StatelessWidget {
                 ?.copyWith(fontWeight: FontWeight.w700),
           ),
           Text(
-            unlocked ? 'Kazandın' : '${days - current} gün kaldı',
+            unlocked
+                ? AppLocalizations.of(context)!.won
+                : AppLocalizations.of(context)!.daysLeft(days - current),
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
@@ -192,17 +253,21 @@ class _StreakTextAchievements extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      (1, '1 günlük seri'),
-      (7, '7 günlük seri'),
-      (30, '30 günlük seri'),
-      (90, '90 günlük seri'),
+      (1, AppLocalizations.of(context)!.dayStreak(1)),
+      (7, AppLocalizations.of(context)!.dayStreak(7)),
+      (30, AppLocalizations.of(context)!.dayStreak(30)),
+      (90, AppLocalizations.of(context)!.dayStreak(90)),
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: items.map((entry) {
         final unlocked = currentStreak >= entry.$1;
-        final color = unlocked ? const Color(0xFF2563EB) : Colors.grey[500];
+        final color = unlocked
+            ? const Color(0xFF2563EB)
+            : (Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey[400]
+                : Colors.grey[500]);
         return Padding(
           padding: const EdgeInsets.only(bottom: 4),
           child: Row(
