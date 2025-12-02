@@ -19,7 +19,7 @@ Future<void> main() async {
     // Masaüstünde pencereyi çok küçültemeyelim
     window_size.setWindowMinSize(const Size(1100, 720));
   }
-  // Initialize Notification Service
+  // Initialize Notification Service and schedule periodic notification
   final notificationService = NotificationService();
   await notificationService.init();
   await notificationService.schedulePeriodicNotification();
