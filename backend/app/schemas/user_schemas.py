@@ -1,10 +1,12 @@
 # backend/app/schemas/user_schemas.py
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 
 
 class UserBase(BaseModel):
-    username: str = Field(..., min_length=3, max_length=32)
+    email: EmailStr
+    name: Optional[str] = None
+    surname: Optional[str] = None
     weight_kg: Optional[float] = None
     height_cm: Optional[float] = None
     age: Optional[int] = None
@@ -13,13 +15,21 @@ class UserBase(BaseModel):
     daily_goal_ml: int = 2000
     preferred_cup_ml: int = 250
     language: str = "tr"
+    subscription_plan: str = "basic"
 
 
 class UserCreate(UserBase):
-    pass
+    password: str = Field(..., min_length=6)
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
 
 
 class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    surname: Optional[str] = None
     weight_kg: Optional[float] = None
     height_cm: Optional[float] = None
     age: Optional[int] = None
@@ -28,6 +38,7 @@ class UserUpdate(BaseModel):
     daily_goal_ml: Optional[int] = None
     preferred_cup_ml: Optional[int] = None
     language: Optional[str] = None
+    subscription_plan: Optional[str] = None
 
 
 class UserOut(UserBase):
