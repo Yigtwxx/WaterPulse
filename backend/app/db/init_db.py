@@ -31,6 +31,7 @@ def init_db() -> None:
                 daily_goal_ml=2400,
                 preferred_cup_ml=250,
                 language="en",
+                subscription_plan="basic",
             ),
             dict(
                 id=2,
@@ -41,6 +42,7 @@ def init_db() -> None:
                 daily_goal_ml=2000,
                 preferred_cup_ml=200,
                 language="en",
+                subscription_plan="plus",
             ),
             dict(
                 id=3,
@@ -51,6 +53,7 @@ def init_db() -> None:
                 daily_goal_ml=2200,
                 preferred_cup_ml=250,
                 language="en",
+                subscription_plan="pro",
             ),
         ]
 

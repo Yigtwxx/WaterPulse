@@ -7,7 +7,10 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    name = Column(String, nullable=True)
+    surname = Column(String, nullable=True)
 
     # Profil bilgileri
     weight_kg = Column(Float, nullable=True)
@@ -20,3 +23,4 @@ class User(Base):
     daily_goal_ml = Column(Integer, default=2000)
     preferred_cup_ml = Column(Integer, default=250)
     language = Column(String, default="tr")
+    subscription_plan = Column(String, default="basic")
