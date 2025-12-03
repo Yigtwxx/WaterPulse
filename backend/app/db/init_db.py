@@ -88,7 +88,7 @@ def init_db() -> None:
 
         # Su logları (streak için)
         today = datetime.utcnow().date()
-        for delta in range(0, 5):
+        for delta in range(1, 5):
             day = today - timedelta(days=delta)
             existing_log = (
                 db.query(models.water_log.WaterLog)
@@ -104,19 +104,7 @@ def init_db() -> None:
                         timestamp=datetime.combine(day, datetime.min.time()),
                     )
                 )
-        # 1 günlük streak anında olsun diye bugüne ekstra kayıt
-        extra_today = db.query(models.water_log.WaterLog).filter(
-            models.water_log.WaterLog.user_id == 1,
-            func.date(models.water_log.WaterLog.timestamp) == today,
-        ).first()
-        if not extra_today:
-            db.add(
-                models.water_log.WaterLog(
-                    user_id=1,
-                    amount_ml=1200,
-                    timestamp=datetime.combine(today, datetime.min.time()),
-                )
-            )
+
         db.commit()
 
         # Arkadaş ilişkisi örneği
