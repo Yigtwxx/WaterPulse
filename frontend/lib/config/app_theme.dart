@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
+  static const Color neonColor = Color(0xFF00FFFF); // Cyan Neon
+
   static ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     primaryColor: const Color(0xFF2563EB), // Vibrant Blue
