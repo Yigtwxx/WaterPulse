@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:waterpulse/features/social/providers/friends_provider.dart';
+import 'package:waterpulse/l10n/generated/app_localizations.dart';
 
 class FriendsScreen extends ConsumerWidget {
   const FriendsScreen({super.key});
@@ -16,9 +17,23 @@ class FriendsScreen extends ConsumerWidget {
     final TextEditingController controller = TextEditingController();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Friends & Leaderboard')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.friendsLeaderboard)),
       body: Container(
-        color: const Color(0xfff5f7fb),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? [
+                    const Color(0xFF0F172A),
+                    const Color(0xFF1E293B),
+                  ]
+                : [
+                    const Color(0xFFEFF6FF),
+                    const Color(0xFFFFFFFF),
+                  ],
+          ),
+        ),
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
@@ -26,7 +41,7 @@ class FriendsScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -42,7 +57,7 @@ class FriendsScreen extends ConsumerWidget {
                   Row(
                     children: [
                       Text(
-                        'Your Code:',
+                        AppLocalizations.of(context)!.yourCode,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: Colors.grey[700],
@@ -54,7 +69,9 @@ class FriendsScreen extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE5EDFF),
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF1E293B)
+                                : const Color(0xFFE5EDFF),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -74,8 +91,8 @@ class FriendsScreen extends ConsumerWidget {
                                   ScaffoldMessenger.of(context)
                                     ..hideCurrentSnackBar()
                                     ..showSnackBar(
-                                      const SnackBar(
-                                          content: Text('Code copied')),
+                                      SnackBar(
+                                          content: Text(AppLocalizations.of(context)!.codeCopied)),
                                     );
                                 },
                                 child: const Icon(Icons.copy,
@@ -98,7 +115,7 @@ class FriendsScreen extends ConsumerWidget {
                             controller: controller,
                             style: const TextStyle(fontSize: 14),
                             decoration: InputDecoration(
-                              hintText: 'Paste friend code',
+                              hintText: AppLocalizations.of(context)!.pasteFriendCode,
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 12),
                               border: OutlineInputBorder(
@@ -136,12 +153,12 @@ class FriendsScreen extends ConsumerWidget {
                               ..showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                      'Friend request sent: ${controller.text}'),
+                                      AppLocalizations.of(context)!.friendRequestSent(controller.text)),
                                 ),
                               );
                             controller.clear();
                           },
-                          child: const Text('Add',
+                          child: Text(AppLocalizations.of(context)!.add,
                               style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w600)),
@@ -159,7 +176,7 @@ class FriendsScreen extends ConsumerWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Friends',
+                AppLocalizations.of(context)!.friends,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -174,7 +191,7 @@ class FriendsScreen extends ConsumerWidget {
                   : leaderboard.isEmpty
                       ? Center(
                           child: Text(
-                            'No friends added yet.',
+                            AppLocalizations.of(context)!.noFriends,
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                         )
@@ -198,7 +215,7 @@ class FriendsScreen extends ConsumerWidget {
                               return Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: Theme.of(context).cardTheme.color,
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
