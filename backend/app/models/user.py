@@ -1,5 +1,5 @@
 # backend/app/models/user.py
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, Boolean
 from app.db.session import Base
 
 
@@ -11,6 +11,8 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     name = Column(String, nullable=True)
     surname = Column(String, nullable=True)
+    is_verified = Column(Boolean, default=False)
+    verification_code = Column(String, nullable=True)
 
     # Profil bilgileri
     weight_kg = Column(Float, nullable=True)
