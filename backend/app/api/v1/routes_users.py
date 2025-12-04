@@ -1,5 +1,7 @@
 # backend/app/api/v1/routes_users.py
 from datetime import date
+import random
+import string
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -9,6 +11,7 @@ from app import models
 from app.schemas.user_schemas import UserCreate, UserOut, UserUpdate, UserLogin
 from app.utils.calc_water_goal import calculate_daily_goal_ml
 from app.core.security import get_password_hash, verify_password
+from app.utils.email_sender import send_email
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -168,3 +171,43 @@ def _calculate_streak(db: Session, user_id: int, goal_ml: int) -> int:
             break
 
     return streak
+
+
+@router.post("/send-verification-code")
+def send_verification_code(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(models.user.User).filter(models.user.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # 6 haneli kod üret
+    code = "".join(random.choices(string.digits, k=6))
+    user.verification_code = code
+    db.commit()
+
+    # E-posta gönder
+    subject = "WaterPulse Verification Code"
+    body = f"Your verification code is: {code}\n\nThank you for using WaterPulse!"
+    
+    # Arka planda veya direkt gönder (basitlik için direkt gönderiyoruz)
+    send_email(user.email, subject, body)
+
+    # Konsola da yazalım (debug için)
+    print(f"VERIFICATION CODE for {user.email}: {code}")
+
+    return {"message": "Verification code sent"}
+
+
+@router.post("/verify-email")
+def verify_email(user_id: int, code: str, db: Session = Depends(get_db)):
+    user = db.query(models.user.User).filter(models.user.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.verification_code != code:
+        raise HTTPException(status_code=400, detail="Invalid verification code")
+
+    user.is_verified = True
+    user.verification_code = None  # Kodu temizle
+    db.commit()
+
+    return {"message": "Email verified successfully"}
