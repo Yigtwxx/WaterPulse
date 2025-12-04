@@ -25,3 +25,6 @@ Thumbs.db
 
 # Database
 backend/waterpulse.db
+
+# Logs
+*.log
