@@ -43,6 +43,7 @@ class UserUpdate(BaseModel):
 
 class UserOut(UserBase):
     id: int
+    is_verified: bool = False
 
     class Config:
         orm_mode = True
