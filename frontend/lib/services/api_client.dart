@@ -12,7 +12,10 @@ class ApiClient {
     const override = String.fromEnvironment('API_BASE_URL');
     if (override.isNotEmpty) return override;
 
-    if (kIsWeb) return 'http://localhost:8000/api/v1';
+    // Use IPv4 loopback explicitly to avoid localhost/IPv6 resolution issues.
+    const localBase = 'http://127.0.0.1:8000/api/v1';
+
+    if (kIsWeb) return localBase;
 
     // Android emülatörde localhost için 10.0.2.2 kullanılır
     if (defaultTargetPlatform == TargetPlatform.android) {
@@ -24,16 +27,25 @@ class ApiClient {
         defaultTargetPlatform == TargetPlatform.macOS ||
         defaultTargetPlatform == TargetPlatform.windows ||
         defaultTargetPlatform == TargetPlatform.linux) {
-      return 'http://localhost:8000/api/v1';
+      return localBase;
     }
 
     // Fallback
-    return 'http://10.0.2.2:8000/api/v1';
+    return localBase;
   }
 
-  Future<Map<String, dynamic>> login(String username) async {
-    final uri = Uri.parse('$baseUrl/users/login?username=$username');
-    final res = await http.post(uri);
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    final uri = Uri.parse('$baseUrl/users/login');
+    final body = jsonEncode({
+      'email': email,
+      'password': password,
+    });
+
+    final res = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
 
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
@@ -55,7 +67,11 @@ class ApiClient {
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     } else {
-      throw Exception('Failed to create user');
+      final body = jsonDecode(res.body);
+      if (body is Map && body.containsKey('detail')) {
+        throw Exception(body['detail']);
+      }
+      throw Exception('Failed to create user: ${res.body}');
     }
   }
 
@@ -154,5 +170,78 @@ class ApiClient {
       return jsonDecode(res.body) as List<dynamic>;
     }
     throw Exception('Failed to compare friends');
+  }
+
+  Future<Map<String, dynamic>> updateUser(int userId, Map<String, dynamic> data) async {
+    final uri = Uri.parse('$baseUrl/users/$userId');
+    final body = jsonEncode(data);
+
+    final res = await http.put(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    } else {
+      throw Exception('Failed to update user');
+    }
+  }
+
+  Future<Map<String, dynamic>> getUser(int userId) async {
+    final uri = Uri.parse('$baseUrl/users/$userId');
+    final res = await http.get(uri);
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    } else {
+      throw Exception('Failed to load user');
+    }
+  }
+  Future<void> sendVerificationCode(int userId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/users/send-verification-code?user_id=$userId'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to send verification code: ${response.body}');
+    }
+  }
+
+  Future<void> verifyEmail(int userId, String code) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/users/verify-email?user_id=$userId&code=$code'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to verify email: ${response.body}');
+    }
+  }
+
+  Future<Map<String, dynamic>> addFriend(int userId, String friendCode) async {
+    final uri = Uri.parse('$baseUrl/friends/add');
+    final body = jsonEncode({
+      'user_id': userId,
+      'friend_code': friendCode,
+    });
+
+    final res = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as Map<String, dynamic>;
+    } else {
+      final body = jsonDecode(res.body);
+      if (body is Map && body.containsKey('detail')) {
+        throw Exception(body['detail']);
+      }
+      throw Exception('Failed to add friend');
+    }
   }
 }
