@@ -1,4 +1,5 @@
 // frontend/lib/main.dart
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -14,17 +15,30 @@ import 'package:waterpulse/l10n/generated/app_localizations.dart';
 import 'package:waterpulse/features/settings/providers/language_provider.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    // Masaüstünde pencereyi çok küçültemeyelim
-    window_size.setWindowMinSize(const Size(1100, 720));
-  }
-  // Initialize Notification Service and schedule periodic notification
-  final notificationService = NotificationService();
-  await notificationService.init();
-  await notificationService.schedulePeriodicNotification();
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(const ProviderScope(child: WaterPulseApp()));
+    try {
+      if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+        window_size.setWindowMinSize(const Size(1100, 720));
+      }
+    } catch (e) {
+      debugPrint('Error setting window size: $e');
+    }
+
+    try {
+      final notificationService = NotificationService();
+      await notificationService.init();
+      await notificationService.schedulePeriodicNotification();
+    } catch (e) {
+      debugPrint('Error initializing notifications: $e');
+    }
+
+    runApp(const ProviderScope(child: WaterPulseApp()));
+  }, (error, stack) {
+    debugPrint('Unhandled error: $error');
+    debugPrint(stack.toString());
+  });
 }
 
 class WaterPulseApp extends ConsumerWidget {
