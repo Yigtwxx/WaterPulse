@@ -18,11 +18,14 @@ import 'package:waterpulse/features/home/widgets/streak_card.dart';
 import 'package:waterpulse/features/home/widgets/amount_button.dart';
 import 'package:waterpulse/features/home/widgets/quick_action_card.dart';
 import 'package:waterpulse/features/home/widgets/goal_badge.dart';
+import 'package:waterpulse/features/home/widgets/water_facts_widget.dart';
 import 'package:waterpulse/ui/screens/profile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:waterpulse/l10n/generated/app_localizations.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:waterpulse/features/home/providers/water_provider.dart';
+import 'package:waterpulse/features/auth/providers/auth_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -56,26 +59,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _initUserAndLoadData();
+    // Data loading is triggered in build via ref.listen or initial check
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
   }
 
-  Future<void> _initUserAndLoadData() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (mounted) {
-      setState(() {
-        _userId = prefs.getInt('userId') ?? 1;
-      });
+  void _loadData() {
+    final user = ref.read(authProvider).value;
+    if (user != null) {
+      setState(() => _userId = user.id);
+      ref.read(waterProvider.notifier).loadTodayTotal(_userId);
+      _loadMetaPanels();
+      _loadWeekTotals();
     }
-    // _loadTodayTotal(); -> Provider hallediyor
-    ref.read(waterProvider.notifier).loadTodayTotal();
-    
-    _loadMetaPanels();
-    _loadWeekTotals();
   }
 
-  // Bugünkü toplam su miktarını backend’den çek
   Future<void> _loadTodayTotal() async {
-    await ref.read(waterProvider.notifier).loadTodayTotal();
+    await ref.read(waterProvider.notifier).loadTodayTotal(_userId);
   }
 
   Future<void> _loadMetaPanels() async {
@@ -161,7 +162,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _addWater(int amount) async {
     if (!mounted) return;
     
-    await ref.read(waterProvider.notifier).addWater(amount);
+    await ref.read(waterProvider.notifier).addWater(_userId, amount);
 
     _bumpTodayWeekTotal(amount);
 
@@ -196,7 +197,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          SnackBar(content: Text('Selected date: $formatted')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.selectDate}: $formatted')),
         );
     });
   }
@@ -209,9 +210,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final currentMl = waterState.todayTotal;
     final loading = waterState.isLoading;
     final achievedToday = currentMl >= _goalMl;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      color: const Color(0xfff5f7fb),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: isDark
+              ? [
+                  const Color(0xFF0F172A), // Slate 900
+                  const Color(0xFF1E293B), // Slate 800
+                ]
+              : [
+                  const Color(0xFFEFF6FF), // Blue 50
+                  const Color(0xFFFFFFFF), // White
+                ],
+        ),
+      ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -229,8 +245,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     horizontal: 14,
                     vertical: 8,
                   ),
-                  foregroundColor: Colors.blueAccent,
-                  backgroundColor: Colors.white,
+                  foregroundColor: Theme.of(context).primaryColor,
+                  backgroundColor: Theme.of(context).cardColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -255,11 +271,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 vertical: 24,
               ),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardTheme.color,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
+                    color: Colors.black.withOpacity(0.04),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -316,12 +332,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                   // Hedef metni (tam ortalı)
                   Text(
-                    'Goal: $_goalMl ml',
+                    '${AppLocalizations.of(context)!.homeGoal}: $_goalMl ml',
                     textAlign: TextAlign.center,
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium
-                        ?.copyWith(color: Colors.grey[600]),
+                        ?.copyWith(
+                            color: isDark ? Colors.grey[400] : Colors.grey[600]),
                   ),
                 ],
               ),
@@ -330,45 +347,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 24),
 
             // ==========================
-            // 2) SUGGESTIONS BÖLÜMÜ
+            // 2) WATER FACTS BÖLÜMÜ
             // ==========================
             Text(
-              'Suggestions',
+              AppLocalizations.of(context)!.suggestions,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.opacity, color: Colors.black87),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Based on your activity, drink a bit more water 💧',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(color: Colors.grey[800]),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            const WaterFactsWidget(),
 
             const SizedBox(height: 24),
 
@@ -376,7 +362,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             // 3) QUICK ACTIONS (Achievements / Friends)
             // ==========================
             Text(
-              'Quick actions',
+              AppLocalizations.of(context)!.quickActions,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
@@ -388,14 +374,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 final cards = [
                   QuickActionCard(
                     icon: Icons.group_outlined,
-                    title: 'Friends',
-                    subtitle: 'Compare with your friends',
+                    title: AppLocalizations.of(context)!.friends,
+                    subtitle: AppLocalizations.of(context)!.friendsSubtitle,
                     onTap: _onFriendsTap,
                   ),
                   QuickActionCard(
                     icon: Icons.emoji_events_outlined,
-                    title: 'Achievements',
-                    subtitle: 'Track your streaks & badges',
+                    title: AppLocalizations.of(context)!.achievements,
+                    subtitle: AppLocalizations.of(context)!.achievementsSubtitle,
                     onTap: _onAchievementsTap,
                   ),
                 ];
@@ -431,7 +417,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 24),
 
             Text(
-              'Streak & avatar',
+              AppLocalizations.of(context)!.streakAvatar,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
@@ -451,6 +437,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authProvider, (previous, next) {
+      if (next.value != null && (previous?.value?.id != next.value!.id)) {
+        _loadData();
+      }
+    });
+
     final waterState = ref.watch(waterProvider);
     final currentMl = waterState.todayTotal;
     final achievedToday = currentMl >= _goalMl;
@@ -493,16 +485,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   );
 
-                  // Reload user ID in case they logged in/out
+                  // Reload user data
                   if (mounted) {
-                    final prefs = await SharedPreferences.getInstance();
-                    setState(() {
-                      _userId = prefs.getInt('userId') ?? 1;
-                    });
-                    // Refresh data for new user
-                    _loadTodayTotal();
-                    _loadMetaPanels();
-                    _loadWeekTotals();
+                    // Refresh auth provider to get latest user data if changed
+                    // ref.refresh(authProvider); // Optional if Profile updates backend
+                    _loadData();
                   }
 
                   // Eğer profil ekranı bir değer döndürmediyse (back tuşu vs.)
