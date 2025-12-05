@@ -28,6 +28,16 @@ class FriendsNotifier extends StateNotifier<FriendsState> {
       state = FriendsState(isLoading: false, leaderboard: state.leaderboard);
     }
   }
+
+  Future<void> addFriend(int userId, String friendCode) async {
+    try {
+      await _apiClient.addFriend(userId, friendCode);
+      // Reload leaderboard or update list
+      await loadLeaderboard();
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
 
 final friendsProvider = StateNotifierProvider<FriendsNotifier, FriendsState>((ref) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:waterpulse/features/auth/providers/auth_provider.dart';
 import 'package:waterpulse/features/social/providers/friends_provider.dart';
 import 'package:waterpulse/l10n/generated/app_localizations.dart';
 
@@ -12,8 +13,9 @@ class FriendsScreen extends ConsumerWidget {
     final state = ref.watch(friendsProvider);
     final loading = state.isLoading;
     final leaderboard = state.leaderboard;
+    final user = ref.watch(authProvider).value;
 
-    final inviteCode = 'WP-1234-AB'; // demo code
+    final inviteCode = user?.friendCode ?? 'Loading...';
     final TextEditingController controller = TextEditingController();
 
     return Scaffold(
@@ -147,16 +149,35 @@ class FriendsScreen extends ConsumerWidget {
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                           ),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context)
-                              ..hideCurrentSnackBar()
-                              ..showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      AppLocalizations.of(context)!.friendRequestSent(controller.text)),
-                                ),
-                              );
-                            controller.clear();
+                          onPressed: () async {
+                            if (controller.text.isEmpty) return;
+                            if (user == null) return;
+
+                            try {
+                              await ref.read(friendsProvider.notifier).addFriend(user.id, controller.text.trim());
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context)
+                                  ..hideCurrentSnackBar()
+                                  ..showSnackBar(
+                                    SnackBar(
+                                      content: Text('Friend added successfully!'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                controller.clear();
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context)
+                                  ..hideCurrentSnackBar()
+                                  ..showSnackBar(
+                                    SnackBar(
+                                      content: Text(e.toString().replaceAll('Exception: ', '')),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                              }
+                            }
                           },
                           child: Text(AppLocalizations.of(context)!.add,
                               style: TextStyle(
@@ -209,7 +230,7 @@ class FriendsScreen extends ConsumerWidget {
                               // Assuming: { "username": "...", "daily_goal_ml": ..., "today_total_ml": ... }
                               final name = friend['username'] ?? 'Unknown';
                               final goal = friend['daily_goal_ml'] ?? 2000;
-                              final current = friend['today_total_ml'] ?? 0;
+                              final current = friend['total_ml'] ?? 0;
                               final percent = (current / goal).clamp(0.0, 1.0);
 
                               return Container(
