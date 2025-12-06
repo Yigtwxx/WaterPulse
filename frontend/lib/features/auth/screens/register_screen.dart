@@ -44,10 +44,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         'password': _passwordController.text,
         'name': _nameController.text.trim(),
         'surname': _surnameController.text.trim(),
-        'height_cm': double.tryParse(_heightController.text.trim()) ?? 0,
-        'weight_kg': double.tryParse(_weightController.text.trim()) ?? 0,
-        'age': int.tryParse(_ageController.text.trim()) ?? 0,
-        'gender': _selectedGender ?? '',
+        'height_cm': double.tryParse(_heightController.text.trim()),
+        'weight_kg': double.tryParse(_weightController.text.trim()),
+        'age': int.tryParse(_ageController.text.trim()),
+        'gender': _selectedGender,
         // Default values
         'daily_goal_ml': 2000,
         'preferred_cup_ml': 250,
@@ -180,14 +180,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your height';
-                      }
-                      final height = double.tryParse(value);
-                      if (height == null || height <= 0) {
-                        return 'Enter a valid height';
-                      }
-                      return null;
+                      return null; // Optional
                     },
                   ),
                   TextFormField(
@@ -199,14 +192,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your weight';
-                      }
-                      final weight = double.tryParse(value);
-                      if (weight == null || weight <= 0) {
-                        return 'Enter a valid weight';
-                      }
-                      return null;
+                      return null; // Optional
                     },
                   ),
                 ),
@@ -221,14 +207,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your age';
-                      }
-                      final age = int.tryParse(value);
-                      if (age == null || age <= 0) {
-                        return 'Enter a valid age';
-                      }
-                      return null;
+                      return null; // Optional
                     },
                   ),
                   DropdownButtonFormField<String>(
@@ -245,10 +224,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ],
                     onChanged: (value) => setState(() => _selectedGender = value),
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select your gender';
-                      }
-                      return null;
+                      return null; // Optional
                     },
                   ),
                 ),
