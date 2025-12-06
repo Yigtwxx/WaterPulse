@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waterpulse/config/app_theme.dart';
 
 class AmountButton extends StatefulWidget {
   final String label;
@@ -44,7 +45,7 @@ class _AmountButtonState extends State<AmountButton> {
               color: enabled ? Colors.white : Colors.grey[200],
               borderRadius: BorderRadius.circular(30),
               border: Border.all(
-                color: enabled ? Colors.blueAccent : Colors.grey,
+                color: enabled ? AppTheme.neonColor : Colors.grey,
               ),
               boxShadow: enabled
                   ? [
