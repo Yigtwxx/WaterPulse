@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waterpulse/config/app_theme.dart';
 
 class QuickActionCard extends StatelessWidget {
   final IconData icon;
@@ -27,7 +28,7 @@ class QuickActionCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.shade200),
+            border: Border.all(color: AppTheme.neonColor),
           ),
           child: Row(
             children: [
