@@ -14,3 +14,4 @@ class FriendDailyTotal(BaseModel):
     user_id: int
     username: str
     total_ml: int
+    daily_goal_ml: int = 2000
