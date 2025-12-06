@@ -104,4 +104,14 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       rethrow;
     }
   }
+
+  Future<void> updateUser(int userId, Map<String, dynamic> updates) async {
+    try {
+      final updatedData = await _apiClient.updateUser(userId, updates);
+      final updatedUser = User.fromJson(updatedData);
+      state = AsyncValue.data(updatedUser);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
