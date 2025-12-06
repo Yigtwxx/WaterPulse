@@ -77,10 +77,18 @@ class _DayCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final reached = total > 0;
+    
     final borderColor =
         highlight ? const Color(0xFF2563EB) : Colors.blueAccent;
-    final bg = reached ? borderColor.withOpacity(0.08) : Colors.white;
+    
+    // Dark mode: Transparent BG, White Border. Light Mode: White BG, Blue Border.
+    final bg = reached
+        ? borderColor.withOpacity(0.08)
+        : (isDark ? Colors.transparent : Colors.white);
+
+    final effectiveBorderColor = isDark && !reached ? Colors.white : borderColor;
 
     return Container(
       width: 58,
@@ -89,7 +97,9 @@ class _DayCircle extends StatelessWidget {
         shape: BoxShape.circle,
         color: bg,
         border: Border.all(
-          color: borderColor.withOpacity(reached ? 0.8 : 0.35),
+          color: isDark && !reached 
+              ? Colors.white 
+              : borderColor.withOpacity(reached ? 0.8 : 0.35),
           width: highlight ? 2.2 : 1.4,
         ),
         boxShadow: [
@@ -105,10 +115,10 @@ class _DayCircle extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: 12,
-              color: Color(0xFF1E3A8A),
+              color: isDark ? Colors.white : const Color(0xFF1E3A8A),
             ),
           ),
           const SizedBox(height: 2),
@@ -119,7 +129,9 @@ class _DayCircle extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: reached ? const Color(0xFF2563EB) : Colors.grey[500],
+              color: isDark 
+                  ? Colors.white.withOpacity(0.9) 
+                  : (reached ? const Color(0xFF2563EB) : Colors.grey[500]),
             ),
           ),
         ],
