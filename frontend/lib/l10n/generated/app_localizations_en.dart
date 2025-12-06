@@ -270,4 +270,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get achMarathonDesc => 'Drink 3 Liters in a single day';
+
+  @override
+  String get achHippo => 'Hydration Hippo 🦛';
+
+  @override
+  String get achHippoDesc => 'Drink 4 Liters in a single day';
+
+  @override
+  String get achTsunami => 'Tsunami Tamer 🌊';
+
+  @override
+  String get achTsunamiDesc => 'Drink 5 Liters in a single day';
+
+  @override
+  String get achSocial1 => 'Social Butterfly 🦋';
+
+  @override
+  String get achSocial1Desc => 'Add your first friend';
+
+  @override
+  String get achSocial5 => 'Squad Goals 👯';
+
+  @override
+  String get achSocial5Desc => 'Add 5 friends';
+
+  @override
+  String get achFriendStreak3 => 'Dynamic Duo ⚡';
+
+  @override
+  String get achFriendStreak3Desc => 'Keep a 3-day streak with a friend';
 }

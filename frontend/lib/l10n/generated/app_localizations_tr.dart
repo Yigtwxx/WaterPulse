@@ -268,4 +268,34 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get achMarathonDesc => 'Bir günde 3 Litre su iç';
+
+  @override
+  String get achHippo => 'Su Aygırı 🦛';
+
+  @override
+  String get achHippoDesc => 'Bir günde 4 Litre su iç';
+
+  @override
+  String get achTsunami => 'Tsunami Terbiyecisi 🌊';
+
+  @override
+  String get achTsunamiDesc => 'Bir günde 5 Litre su iç';
+
+  @override
+  String get achSocial1 => 'Sosyalleşen Damla 🦋';
+
+  @override
+  String get achSocial1Desc => 'İlk arkadaşını ekle';
+
+  @override
+  String get achSocial5 => 'Tayfa Kuruldu 👯';
+
+  @override
+  String get achSocial5Desc => '5 arkadaş ekle';
+
+  @override
+  String get achFriendStreak3 => 'Ayrılmaz İkili ⚡';
+
+  @override
+  String get achFriendStreak3Desc => 'Bir arkadaşınla 3 günlük seri yap';
 }
