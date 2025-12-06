@@ -50,7 +50,7 @@ class ApiClient {
     if (res.statusCode == 200) {
       return jsonDecode(res.body) as Map<String, dynamic>;
     } else {
-      throw Exception('Login failed');
+      throw Exception('Login failed: ${res.statusCode} - ${res.body}');
     }
   }
 
