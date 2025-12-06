@@ -473,44 +473,134 @@ abstract class AppLocalizations {
   /// No description provided for @achGoalReached.
   ///
   /// In en, this message translates to:
-  /// **'You reached your daily water intake goal!'**
+  /// **'Hydration High Five! ✋'**
   String get achGoalReached;
 
   /// No description provided for @achFirstLog.
   ///
   /// In en, this message translates to:
-  /// **'First water log'**
+  /// **'First Splash 💦'**
   String get achFirstLog;
 
   /// No description provided for @ach500ml.
   ///
   /// In en, this message translates to:
-  /// **'500 ml in a day'**
+  /// **'Half Liter Hero 🦸'**
   String get ach500ml;
 
   /// No description provided for @achGoal1Day.
   ///
   /// In en, this message translates to:
-  /// **'Complete goal 1 day in a row'**
+  /// **'One Day Wonder 🌟'**
   String get achGoal1Day;
 
   /// No description provided for @achGoal7Days.
   ///
   /// In en, this message translates to:
-  /// **'Complete goal 7 days in a row'**
+  /// **'Weekly Warrior ⚔️'**
   String get achGoal7Days;
 
   /// No description provided for @achGoal30Days.
   ///
   /// In en, this message translates to:
-  /// **'Complete goal 30 days in a row'**
+  /// **'Monthly Master 🏆'**
   String get achGoal30Days;
 
   /// No description provided for @achGoal90Days.
   ///
   /// In en, this message translates to:
-  /// **'Complete goal 90 days in a row'**
+  /// **'Quarterly King 👑'**
   String get achGoal90Days;
+
+  /// No description provided for @achEarlyBird.
+  ///
+  /// In en, this message translates to:
+  /// **'Early Bird 🐦'**
+  String get achEarlyBird;
+
+  /// No description provided for @achNightOwl.
+  ///
+  /// In en, this message translates to:
+  /// **'Night Owl 🦉'**
+  String get achNightOwl;
+
+  /// No description provided for @achWeekendWarrior.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend Warrior 🏖️'**
+  String get achWeekendWarrior;
+
+  /// No description provided for @achMarathon.
+  ///
+  /// In en, this message translates to:
+  /// **'Camel Mode 🐪'**
+  String get achMarathon;
+
+  /// No description provided for @achFirstLogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your first glass of water'**
+  String get achFirstLogDesc;
+
+  /// No description provided for @ach500mlDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Drink 500ml in a single day'**
+  String get ach500mlDesc;
+
+  /// No description provided for @achGoalReachedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach your daily hydration goal'**
+  String get achGoalReachedDesc;
+
+  /// No description provided for @achGoal1DayDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Hit your goal for 1 day'**
+  String get achGoal1DayDesc;
+
+  /// No description provided for @achGoal7DaysDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Hit your goal for 7 days straight'**
+  String get achGoal7DaysDesc;
+
+  /// No description provided for @achGoal30DaysDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Hit your goal for 30 days straight'**
+  String get achGoal30DaysDesc;
+
+  /// No description provided for @achGoal90DaysDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Hit your goal for 90 days straight'**
+  String get achGoal90DaysDesc;
+
+  /// No description provided for @achEarlyBirdDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Drink water before 8:00 AM'**
+  String get achEarlyBirdDesc;
+
+  /// No description provided for @achNightOwlDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Drink water after 10:00 PM'**
+  String get achNightOwlDesc;
+
+  /// No description provided for @achWeekendWarriorDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach your goal on Saturday & Sunday'**
+  String get achWeekendWarriorDesc;
+
+  /// No description provided for @achMarathonDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Drink 3 Liters in a single day'**
+  String get achMarathonDesc;
 }
 
 class _AppLocalizationsDelegate

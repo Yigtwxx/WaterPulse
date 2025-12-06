@@ -204,23 +204,68 @@ class AppLocalizationsTr extends AppLocalizations {
   String get won => 'Kazandın';
 
   @override
-  String get achGoalReached => 'Günlük su içme hedefine ulaştın!';
+  String get achGoalReached => 'Su Zirvesi! ✋';
 
   @override
-  String get achFirstLog => 'İlk su kaydı';
+  String get achFirstLog => 'İlk Sıçrama 💦';
 
   @override
-  String get ach500ml => 'Bir günde 500 ml';
+  String get ach500ml => 'Yarım Litre Kahramanı 🦸';
 
   @override
-  String get achGoal1Day => 'Hedefi 1 gün art arda tamamla';
+  String get achGoal1Day => 'Bir Günlük Harika 🌟';
 
   @override
-  String get achGoal7Days => 'Hedefi 7 gün art arda tamamla';
+  String get achGoal7Days => 'Haftalık Savaşçı ⚔️';
 
   @override
-  String get achGoal30Days => 'Hedefi 30 gün art arda tamamla';
+  String get achGoal30Days => 'Aylık Usta 🏆';
 
   @override
-  String get achGoal90Days => 'Hedefi 90 gün art arda tamamla';
+  String get achGoal90Days => 'Çeyrek Kral 👑';
+
+  @override
+  String get achEarlyBird => 'Erkenci Kuş 🐦';
+
+  @override
+  String get achNightOwl => 'Gece Kuşu 🦉';
+
+  @override
+  String get achWeekendWarrior => 'Hafta Sonu Savaşçısı 🏖️';
+
+  @override
+  String get achMarathon => 'Deve Modu 🐪';
+
+  @override
+  String get achFirstLogDesc => 'İlk su bardağını kaydet';
+
+  @override
+  String get ach500mlDesc => 'Bir günde 500ml su iç';
+
+  @override
+  String get achGoalReachedDesc => 'Günlük su hedefine ulaş';
+
+  @override
+  String get achGoal1DayDesc => 'Hedefini 1 gün tamamla';
+
+  @override
+  String get achGoal7DaysDesc => 'Hedefini 7 gün art arda tamamla';
+
+  @override
+  String get achGoal30DaysDesc => 'Hedefini 30 gün art arda tamamla';
+
+  @override
+  String get achGoal90DaysDesc => 'Hedefini 90 gün art arda tamamla';
+
+  @override
+  String get achEarlyBirdDesc => 'Sabah 8:00\'den önce su iç';
+
+  @override
+  String get achNightOwlDesc => 'Gece 22:00\'den sonra su iç';
+
+  @override
+  String get achWeekendWarriorDesc => 'Cumartesi ve Pazar hedefine ulaş';
+
+  @override
+  String get achMarathonDesc => 'Bir günde 3 Litre su iç';
 }

@@ -206,23 +206,68 @@ class AppLocalizationsEn extends AppLocalizations {
   String get won => 'Won';
 
   @override
-  String get achGoalReached => 'You reached your daily water intake goal!';
+  String get achGoalReached => 'Hydration High Five! ✋';
 
   @override
-  String get achFirstLog => 'First water log';
+  String get achFirstLog => 'First Splash 💦';
 
   @override
-  String get ach500ml => '500 ml in a day';
+  String get ach500ml => 'Half Liter Hero 🦸';
 
   @override
-  String get achGoal1Day => 'Complete goal 1 day in a row';
+  String get achGoal1Day => 'One Day Wonder 🌟';
 
   @override
-  String get achGoal7Days => 'Complete goal 7 days in a row';
+  String get achGoal7Days => 'Weekly Warrior ⚔️';
 
   @override
-  String get achGoal30Days => 'Complete goal 30 days in a row';
+  String get achGoal30Days => 'Monthly Master 🏆';
 
   @override
-  String get achGoal90Days => 'Complete goal 90 days in a row';
+  String get achGoal90Days => 'Quarterly King 👑';
+
+  @override
+  String get achEarlyBird => 'Early Bird 🐦';
+
+  @override
+  String get achNightOwl => 'Night Owl 🦉';
+
+  @override
+  String get achWeekendWarrior => 'Weekend Warrior 🏖️';
+
+  @override
+  String get achMarathon => 'Camel Mode 🐪';
+
+  @override
+  String get achFirstLogDesc => 'Log your first glass of water';
+
+  @override
+  String get ach500mlDesc => 'Drink 500ml in a single day';
+
+  @override
+  String get achGoalReachedDesc => 'Reach your daily hydration goal';
+
+  @override
+  String get achGoal1DayDesc => 'Hit your goal for 1 day';
+
+  @override
+  String get achGoal7DaysDesc => 'Hit your goal for 7 days straight';
+
+  @override
+  String get achGoal30DaysDesc => 'Hit your goal for 30 days straight';
+
+  @override
+  String get achGoal90DaysDesc => 'Hit your goal for 90 days straight';
+
+  @override
+  String get achEarlyBirdDesc => 'Drink water before 8:00 AM';
+
+  @override
+  String get achNightOwlDesc => 'Drink water after 10:00 PM';
+
+  @override
+  String get achWeekendWarriorDesc => 'Reach your goal on Saturday & Sunday';
+
+  @override
+  String get achMarathonDesc => 'Drink 3 Liters in a single day';
 }
