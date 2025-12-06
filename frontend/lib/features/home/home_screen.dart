@@ -307,25 +307,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(height: 30),
 
                   // Hızlı ekleme butonları (tam ortalı ve eşit genişlik)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 130,
-                        child: AmountButton(
-                          label: '+250 ml',
-                          onTap: loading ? null : () => _addWater(250),
-                        ),
-                      ),
-                      const SizedBox(width: 30),
-                      SizedBox(
-                        width: 130,
-                        child: AmountButton(
-                          label: '+500 ml',
-                          onTap: loading ? null : () => _addWater(500),
-                        ),
-                      ),
-                    ],
+                  // authProvider'dan güncel değerleri al
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final user = ref.watch(authProvider).value;
+                      final val1 = user?.quickAdd1Ml ?? 250;
+                      final val2 = user?.quickAdd2Ml ?? 500;
+
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 130,
+                            child: AmountButton(
+                              label: '+$val1 ml',
+                              onTap: loading ? null : () => _addWater(val1),
+                            ),
+                          ),
+                          const SizedBox(width: 30),
+                          SizedBox(
+                            width: 130,
+                            child: AmountButton(
+                              label: '+$val2 ml',
+                              onTap: loading ? null : () => _addWater(val2),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 16),
