@@ -13,6 +13,7 @@ class User {
   final String language;
   final String subscriptionPlan;
   final bool isVerified;
+  final String? friendCode;
 
   User({
     required this.id,
@@ -29,6 +30,7 @@ class User {
     required this.language,
     required this.subscriptionPlan,
     required this.isVerified,
+    this.friendCode,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -47,6 +49,7 @@ class User {
       language: json['language'] ?? 'en',
       subscriptionPlan: json['subscription_plan'] ?? 'basic',
       isVerified: json['is_verified'] ?? false,
+      friendCode: json['friend_code'],
     );
   }
 
@@ -65,7 +68,9 @@ class User {
       'preferred_cup_ml': preferredCupMl,
       'language': language,
       'subscription_plan': subscriptionPlan,
+      'subscription_plan': subscriptionPlan,
       'is_verified': isVerified,
+      'friend_code': friendCode,
     };
   }
 }
