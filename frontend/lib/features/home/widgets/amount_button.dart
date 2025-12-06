@@ -22,6 +22,29 @@ class _AmountButtonState extends State<AmountButton> {
   Widget build(BuildContext context) {
     final enabled = widget.onTap != null;
     final scale = _pressed ? 0.95 : 1.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Dark Mode Colors:
+    // Background: A different blue (e.g., Color(0xFF2563EB)) to stand out from background
+    // Text: White
+    // Border: Same bright blue or transparent
+    
+    // Light Mode Colors (Original):
+    // Background: White
+    // Text: BlueAccent
+    // Border: Neon/Blue
+
+    final Color bgColor = enabled
+        ? (isDark ? const Color(0xFF1E40AF) : Colors.white) // Darker Blue in Dark Mode
+        : (isDark ? Colors.grey[800]! : Colors.grey[200]!);
+
+    final Color borderColor = enabled
+        ? (isDark ? const Color(0xFF3B82F6) : AppTheme.neonColor)
+        : Colors.grey;
+
+    final Color textColor = enabled
+        ? (isDark ? Colors.white : Colors.blueAccent)
+        : Colors.grey;
 
     return AnimatedScale(
       duration: const Duration(milliseconds: 120),
@@ -42,15 +65,17 @@ class _AmountButtonState extends State<AmountButton> {
             padding:
                 const EdgeInsets.symmetric(horizontal: 32.0, vertical: 10.0),
             decoration: BoxDecoration(
-              color: enabled ? Colors.white : Colors.grey[200],
+              color: bgColor,
               borderRadius: BorderRadius.circular(30),
               border: Border.all(
-                color: enabled ? AppTheme.neonColor : Colors.grey,
+                color: borderColor,
               ),
               boxShadow: enabled
                   ? [
                       BoxShadow(
-                        color: Colors.blueAccent.withOpacity(0.08),
+                        color: isDark 
+                            ? Colors.black.withOpacity(0.3) 
+                            : Colors.blueAccent.withOpacity(0.08),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -61,7 +86,7 @@ class _AmountButtonState extends State<AmountButton> {
               child: Text(
                 widget.label,
                 style: TextStyle(
-                  color: enabled ? Colors.blueAccent : Colors.grey,
+                  color: textColor,
                   fontWeight: FontWeight.w600,
                 ),
               ),
