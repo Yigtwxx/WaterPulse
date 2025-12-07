@@ -75,9 +75,14 @@ class ApiClient {
     }
   }
 
-  // Bugünkü toplam su miktarını getir
-  Future<int> getTodayTotal({int userId = 1}) async {
-    final uri = Uri.parse('$baseUrl/water/daily-total/$userId');
+  // Belirli bir günün (veya bugünün) toplam su miktarını getir
+  Future<int> getDailyTotal({int userId = 1, DateTime? date}) async {
+    String query = '';
+    if (date != null) {
+      final dateStr = date.toIso8601String().split('T').first;
+      query = '?date_str=$dateStr';
+    }
+    final uri = Uri.parse('$baseUrl/water/daily-total/$userId$query');
     final res = await http.get(uri);
 
     if (res.statusCode == 200) {
@@ -102,6 +107,22 @@ class ApiClient {
 
     if (res.statusCode != 200) {
       throw Exception('Failed to add water');
+    }
+  }
+
+  Future<List<dynamic>> getDailyLogs({int userId = 1, DateTime? date}) async {
+    String query = '';
+    if (date != null) {
+      final dateStr = date.toIso8601String().split('T').first;
+      query = '?date_str=$dateStr';
+    }
+    final uri = Uri.parse('$baseUrl/water/logs/$userId$query');
+    final res = await http.get(uri);
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as List<dynamic>;
+    } else {
+      throw Exception('Failed to load daily logs');
     }
   }
 
