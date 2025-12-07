@@ -26,7 +26,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _notificationsEnabled = true;
 
   // Local state for settings
-  late ThemeMode _selectedTheme;
+  late String _selectedTheme;
   late Locale _selectedLocale;
   late Color _selectedWaterColor;
   late int _quickAdd1;
@@ -315,13 +315,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               end: Alignment.bottomCenter,
               colors: isDark
                   ? [
-                      const Color(0xFF0F172A), // Slate 900
-                      const Color(0xFF1E293B), // Slate 800
+                      Theme.of(context).scaffoldBackgroundColor,
+                      Theme.of(context).cardColor,
                     ]
                   : [
-                      const Color(0xFFEFF6FF), // Blue 50
-                      const Color(0xFFFFFFFF), // White
+                      Theme.of(context).scaffoldBackgroundColor,
+                      Theme.of(context).cardColor,
                     ],
+
             ),
           ),
           child: SafeArea(
@@ -559,25 +560,171 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   _ProfileCard(
                     title: AppLocalizations.of(context)!.theme,
                     subtitle: AppLocalizations.of(context)!.themeSubtitle,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _selectedTheme == ThemeMode.dark
-                              ? AppLocalizations.of(context)!.darkMode
-                              : AppLocalizations.of(context)!.lightMode,
-                          style: theme.textTheme.bodyMedium,
-                        ),
-                        Switch(
-                          value: _selectedTheme == ThemeMode.dark,
-                          activeColor: const Color(0xFF2563EB),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedTheme = value ? ThemeMode.dark : ThemeMode.light;
-                            });
+                    child: SizedBox(
+                      height: 120, // Increased height for split view
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          {
+                            'name': 'Standard',
+                            'lightKey': 'light',
+                            'darkKey': 'dark',
+                            'lightColor': const Color(0xFFBFDBFE), // Blue 200
+                            'darkColor': const Color(0xFF0F172A), // Slate 900
+                            'freeLight': true,
+                            'freeDark': true,
                           },
-                        ),
-                      ],
+                          {
+                            'name': 'Forest',
+                            'lightKey': 'forest_light',
+                            'darkKey': 'forest_dark',
+                            'lightColor': const Color(0xFFA7F3D0), // Emerald 200
+                            'darkColor': const Color(0xFF064E3B), // Emerald 900
+                            'freeLight': false,
+                            'freeDark': false,
+                          },
+                          {
+                            'name': 'Sunset',
+                            'lightKey': 'sunset_light',
+                            'darkKey': 'sunset_dark',
+                            'lightColor': const Color(0xFFFED7AA), // Orange 200
+                            'darkColor': const Color(0xFF7C2D12), // Orange 900
+                            'freeLight': false,
+                            'freeDark': false,
+                          },
+                          {
+                            'name': 'Pink',
+                            'lightKey': 'pink_light',
+                            'darkKey': 'pink_dark',
+                            'lightColor': const Color(0xFFFBCFE8), // Pink 200
+                            'darkColor': const Color(0xFF831843), // Pink 900
+                            'freeLight': false,
+                            'freeDark': false,
+                          },
+                          {
+                            'name': 'Galactic',
+                            'lightKey': 'galactic_light',
+                            'darkKey': 'galactic_dark',
+                            'lightColor': const Color(0xFFDDD6FE), // Violet 200
+                            'darkColor': const Color(0xFF4C1D95), // Violet 900
+                            'freeLight': false,
+                            'freeDark': false,
+                          },
+                        ].map((group) {
+                          final name = group['name'] as String;
+                          final lightKey = group['lightKey'] as String;
+                          final darkKey = group['darkKey'] as String;
+                          final lightColor = group['lightColor'] as Color;
+                          final darkColor = group['darkColor'] as Color;
+                          final freeLight = group['freeLight'] as bool;
+                          final freeDark = group['freeDark'] as bool;
+                          final isPro = subscriptionPlan == 'pro';
+
+                          Widget buildHalf({
+                            required String key,
+                            required Color color,
+                            required bool isFree,
+                            required bool isTop,
+                          }) {
+                            final isUnlocked = isFree || isPro;
+                            final isSelected = _selectedTheme == key;
+
+                            return Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (!isUnlocked) {
+                                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Upgrade to Pro to unlock this theme! 🔒'),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  setState(() => _selectedTheme = key);
+                                },
+                                child: Container(
+                                  color: color,
+                                  child: Stack(
+                                    children: [
+                                      if (isSelected)
+                                        Center(
+                                          child: CircleAvatar(
+                                            radius: 8,
+                                            backgroundColor: Theme.of(context).primaryColor,
+                                            child: const Icon(Icons.check, size: 10, color: Colors.white),
+                                          ),
+                                        ),
+                                      if (!isUnlocked)
+                                        Center(
+                                          child: Icon(Icons.lock, size: 14, color: isTop ? Colors.grey : Colors.white54),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+
+                          return Container(
+                            width: 80,
+                            margin: const EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.withOpacity(0.3), width: 1),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                )
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                                  child: SizedBox(
+                                    height: 45, // Fixed height for top half
+                                    child: Row(
+                                      children: [
+                                        buildHalf(key: lightKey, color: lightColor, isFree: freeLight, isTop: true),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(15)),
+                                  child: SizedBox(
+                                    height: 45, // Fixed height for bottom half
+                                    child: Row(
+                                      children: [
+                                        buildHalf(key: darkKey, color: darkColor, isFree: freeDark, isTop: false),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  height: 28,
+                                  decoration: const BoxDecoration(
+                                    border: Border(top: BorderSide(color: Colors.black12)),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    name,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Theme.of(context).textTheme.bodySmall?.color,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ),
 
@@ -631,6 +778,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 16), // Added spacing
+
                   // ==== WATER COLOR AYARLARI ====
                   _ProfileCard(
                     title: AppLocalizations.of(context)!.waterColor,
@@ -651,13 +800,44 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           const Color(0xFFF50057), // Pink Accent
                           const Color(0xFFD500F9), // Purple Accent
                           const Color(0xFF651FFF), // Deep Purple Accent
-                        ].map((color) => _ColorOption(
-                          color: color,
-                          isSelected: _selectedWaterColor.value == color.value,
-                          onTap: () {
-                            setState(() => _selectedWaterColor = color);
-                          },
-                        )).toList(),
+                        ].asMap().entries.map((entry) {
+                          final int index = entry.key;
+                          final Color color = entry.value;
+                          final bool isUnlocked = (subscriptionPlan == 'pro') || (index == 0);
+
+                          return Stack(
+                            children: [
+                              Opacity(
+                                opacity: isUnlocked ? 1.0 : 0.5,
+                                child: _ColorOption(
+                                  color: color,
+                                  isSelected: _selectedWaterColor.value == color.value,
+                                  onTap: () {
+                                    if (!isUnlocked) {
+                                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Upgrade to Pro to unlock custom colors! 🔒'),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    setState(() => _selectedWaterColor = color);
+                                  },
+                                ),
+                              ),
+                              if (!isUnlocked)
+                                Positioned.fill(
+                                  child: IgnorePointer(
+                                    child: Center(
+                                      child: Icon(Icons.lock, size: 16, color: Colors.white.withOpacity(0.8)),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
