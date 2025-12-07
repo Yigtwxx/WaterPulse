@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:waterpulse/features/auth/providers/auth_provider.dart';
 import 'package:waterpulse/services/api_client.dart';
 
 class DatasScreen extends StatefulWidget {
@@ -59,14 +61,19 @@ class _DatasScreenState extends State<DatasScreen> with SingleTickerProviderStat
   }
 }
 
-class _BackendHeatmap extends StatelessWidget {
+class _BackendHeatmap extends ConsumerWidget {
   final String type;
   const _BackendHeatmap({required this.type});
 
   @override
-  Widget build(BuildContext context) {
-    // Using userId=1 as default, matching other parts of the app
-    final userId = 1;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authProvider).value;
+    
+    if (user == null) {
+      return const Center(child: Text("Please login to view stats"));
+    }
+
+    final userId = user.id;
     final url = '${ApiClient.baseUrl}/stats/heatmap/$type/$userId?t=${DateTime.now().millisecondsSinceEpoch}';
 
     return Center(
