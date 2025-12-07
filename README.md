@@ -4,7 +4,7 @@
 ![Dart](https://img.shields.io/badge/dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
-![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 
 **WaterPulse** is a modern, cross-platform hydration tracking application designed to help you stay healthy and hydrated. Combining a sleek, responsive **Flutter** frontend with a robust **FastAPI** backend, WaterPulse delivers a seamless user experience with smart reminders, detailed analytics, and an intuitive interface.
@@ -17,7 +17,7 @@
 *   **Intelligent Reminders**: Get timely notifications to drink water based on your schedule.
 *   **Visual Analytics**: View your hydration history with beautiful, interactive charts (Daily, Weekly, Monthly).
 *   **Cross-Platform**: Runs smoothly on Windows, Android, and iOS (built with Flutter).
-*   **Data Persistence**: Secure local data storage using SQLite, managed by a high-performance Python backend.
+*   **Data Persistence**: Secure cloud-ready data storage using PostgreSQL, managed by a high-performance Python backend.
 *   **Clean UI/UX**: A polished, user-friendly interface designed for ease of use.
 
 ---
@@ -39,7 +39,7 @@
 *   **Visualization Generation**: [Matplotlib](https://matplotlib.org/) & [Seaborn](https://seaborn.pydata.org/)
 
 ### Database
-*   **SQLite**: Lightweight, serverless, and self-contained.
+*   **PostgreSQL**: Advanced, enterprise-class open source relational database.
 
 ---
 
