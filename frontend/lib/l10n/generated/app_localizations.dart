@@ -601,6 +601,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Drink 3 Liters in a single day'**
   String get achMarathonDesc;
+
+  /// No description provided for @achHippo.
+  ///
+  /// In en, this message translates to:
+  /// **'Hydration Hippo 🦛'**
+  String get achHippo;
+
+  /// No description provided for @achHippoDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Drink 4 Liters in a single day'**
+  String get achHippoDesc;
+
+  /// No description provided for @achTsunami.
+  ///
+  /// In en, this message translates to:
+  /// **'Tsunami Tamer 🌊'**
+  String get achTsunami;
+
+  /// No description provided for @achTsunamiDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Drink 5 Liters in a single day'**
+  String get achTsunamiDesc;
+
+  /// No description provided for @achSocial1.
+  ///
+  /// In en, this message translates to:
+  /// **'Social Butterfly 🦋'**
+  String get achSocial1;
+
+  /// No description provided for @achSocial1Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first friend'**
+  String get achSocial1Desc;
+
+  /// No description provided for @achSocial5.
+  ///
+  /// In en, this message translates to:
+  /// **'Squad Goals 👯'**
+  String get achSocial5;
+
+  /// No description provided for @achSocial5Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Add 5 friends'**
+  String get achSocial5Desc;
+
+  /// No description provided for @achFriendStreak3.
+  ///
+  /// In en, this message translates to:
+  /// **'Dynamic Duo ⚡'**
+  String get achFriendStreak3;
+
+  /// No description provided for @achFriendStreak3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep a 3-day streak with a friend'**
+  String get achFriendStreak3Desc;
+
+  /// No description provided for @loggedOutSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Account successfully logged out'**
+  String get loggedOutSuccess;
+
+  /// No description provided for @waterColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Water Drop Color'**
+  String get waterColor;
+
+  /// No description provided for @waterColorSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the color of your hydration drop.'**
+  String get waterColorSubtitle;
 }
 
 class _AppLocalizationsDelegate

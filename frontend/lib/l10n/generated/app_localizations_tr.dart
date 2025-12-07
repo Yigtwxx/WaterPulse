@@ -298,4 +298,13 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get achFriendStreak3Desc => 'Bir arkadaşınla 3 günlük seri yap';
+
+  @override
+  String get loggedOutSuccess => 'Hesaptan başarıyla çıkış yapıldı';
+
+  @override
+  String get waterColor => 'Su Damlası Rengi';
+
+  @override
+  String get waterColorSubtitle => 'Su damlanızın rengini seçin.';
 }

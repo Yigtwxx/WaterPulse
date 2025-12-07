@@ -300,4 +300,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get achFriendStreak3Desc => 'Keep a 3-day streak with a friend';
+
+  @override
+  String get loggedOutSuccess => 'Account successfully logged out';
+
+  @override
+  String get waterColor => 'Water Drop Color';
+
+  @override
+  String get waterColorSubtitle => 'Choose the color of your hydration drop.';
 }
