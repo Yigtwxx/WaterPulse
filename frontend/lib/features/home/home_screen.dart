@@ -26,6 +26,7 @@ import 'package:waterpulse/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:waterpulse/features/home/providers/water_provider.dart';
 import 'package:waterpulse/features/auth/providers/auth_provider.dart';
+import 'package:waterpulse/features/home/providers/achievements_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -438,6 +439,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               currentMl: currentMl,
               dailyGoal: _goalMl,
             ),
+            
+            
+            const SizedBox(height: 40),
           ],
         ),
       ),
@@ -498,21 +502,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   if (mounted) {
                     // Refresh auth provider to get latest user data if changed
                     // ref.refresh(authProvider); // Optional if Profile updates backend
-                    _loadData();
+                    // _loadData(); // Removed to prevent resetting water data (race condition or redundant fetch)
                   }
 
                   // Eğer profil ekranı bir değer döndürmediyse (back tuşu vs.)
                   if (!mounted) return;
                   if (newGoal == null) {
-                    // Bunu görürsen, ProfileScreen tarafı Navigator.pop(context, _dailyGoal)
-                    // ile dönmüyor demektir.
-                    ScaffoldMessenger.of(context)
-                      ..hideCurrentSnackBar()
-                      ..showSnackBar(
-                        const SnackBar(
-                          content: Text('No goal returned from ProfileScreen'),
-                        ),
-                      );
+                    // Check if user is logged out (authProvider value is null)
+                    final currentUser = ref.read(authProvider).value;
+                    if (currentUser == null) {
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                           SnackBar(
+                            content: Text(AppLocalizations.of(context)!.loggedOutSuccess),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                    }
+                    // If not logged out, just ignore the null return (back button without changes)
                     return;
                   }
 
@@ -534,8 +542,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
-}
-
+} // End _HomeScreenState
 
 // =======================================================
 // QUICK ACTION KART WIDGET'I
