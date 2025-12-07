@@ -8,6 +8,7 @@ import 'package:waterpulse/features/settings/providers/theme_provider.dart';
 import 'package:waterpulse/l10n/generated/app_localizations.dart';
 import 'package:waterpulse/services/api_client.dart';
 import 'package:waterpulse/ui/screens/payment_screen.dart';
+import 'package:waterpulse/features/settings/providers/water_color_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key, required this.initialGoal});
@@ -24,11 +25,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late int _savedDailyGoal; // Track the saved state
   bool _notificationsEnabled = true;
 
+  // Local state for settings
+  late ThemeMode _selectedTheme;
+  late Locale _selectedLocale;
+  late Color _selectedWaterColor;
+  late int _quickAdd1;
+  late int _quickAdd2;
+
   @override
   void initState() {
     super.initState();
     _dailyGoal = widget.initialGoal;
     _savedDailyGoal = widget.initialGoal;
+    
+    // Initialize local state from providers
+    _selectedTheme = ref.read(themeProvider);
+    _selectedLocale = ref.read(languageProvider);
+    _selectedWaterColor = ref.read(waterColorProvider); // .value not needed for StateNotifier? Provider returns state.
+    
+    final user = ref.read(authProvider).value;
+    _quickAdd1 = user?.quickAdd1Ml ?? 250;
+    _quickAdd2 = user?.quickAdd2Ml ?? 500;
   }
 
   Future<void> _updateSubscription(String plan) async {
@@ -206,7 +223,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   bool get _hasChanges {
-    return _dailyGoal != _savedDailyGoal;
+    final user = ref.read(authProvider).value;
+    if (user == null) return false;
+
+    if (_dailyGoal != _savedDailyGoal) return true;
+    if (_selectedTheme != ref.read(themeProvider)) return true;
+    if (_selectedLocale != ref.read(languageProvider)) return true;
+    if (_selectedWaterColor != ref.read(waterColorProvider)) return true;
+    if (_quickAdd1 != (user.quickAdd1Ml)) return true;
+    if (_quickAdd2 != (user.quickAdd2Ml)) return true;
+    
+    return false;
   }
 
   Future<void> _saveChanges() async {
@@ -214,13 +241,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (user == null) return;
 
     try {
-      await _apiClient.updateUser(user.id, {'daily_goal_ml': _dailyGoal});
-      // Refresh user data
-      ref.refresh(authProvider);
+      // 1. Update User Data (Backend)
+      final updates = <String, dynamic>{
+        'daily_goal_ml': _dailyGoal,
+        'quick_add_1_ml': _quickAdd1,
+        'quick_add_2_ml': _quickAdd2,
+      };
+      await ref.read(authProvider.notifier).updateUser(user.id, updates);
+
+      // 2. Update Local Settings (Providers)
+      if (_selectedTheme != ref.read(themeProvider)) {
+        await ref.read(themeProvider.notifier).setTheme(_selectedTheme);
+      }
+      if (_selectedLocale != ref.read(languageProvider)) {
+        await ref.read(languageProvider.notifier).setLanguage(_selectedLocale);
+      }
+      if (_selectedWaterColor != ref.read(waterColorProvider)) {
+        await ref.read(waterColorProvider.notifier).setColor(_selectedWaterColor);
+      }
       
       if (mounted) {
         setState(() {
           _savedDailyGoal = _dailyGoal; // Update baseline
+          // Providers are updated, so _hasChanges should now be false on rebuild
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Changes saved successfully!')),
@@ -329,14 +372,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           icon: const Icon(Icons.verified_user_outlined, color: Colors.orange),
                           tooltip: "Verify Email",
                         ),
-                      IconButton(
-                        onPressed: () async {
-                          await ref.read(authProvider.notifier).logout();
-                          if (mounted) Navigator.pop(context);
-                        },
-                        icon: const Icon(Icons.logout, color: Colors.red),
-                        tooltip: AppLocalizations.of(context)!.logout,
-                      ),
+                        IconButton(
+                          onPressed: () async {
+                            final shouldLogout = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text(AppLocalizations.of(context)!.logout),
+                                content: const Text('Are you sure you want to log out?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context, false),
+                                    child: Text(AppLocalizations.of(context)!.cancel),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context, true),
+                                    child: Text(
+                                      AppLocalizations.of(context)!.logout,
+                                      style: const TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (shouldLogout == true) {
+                              await ref.read(authProvider.notifier).logout();
+                              if (mounted) Navigator.pop(context);
+                            }
+                          },
+                          icon: const Icon(Icons.logout, color: Colors.red),
+                          tooltip: AppLocalizations.of(context)!.logout,
+                        ),
                     ],
                   ),
 
@@ -415,6 +481,53 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
 
                   const SizedBox(height: 16),
+                  
+                  // ==== QUICK ADD BUTTONS ====
+                  _ProfileCard(
+                    title: "Quick Add Buttons",
+                    subtitle: "Customize your water shortcuts",
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            initialValue: _quickAdd1.toString(),
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: "Button 1 (ml)",
+                              suffixText: "ml",
+                              border: OutlineInputBorder(),
+                            ),
+                            onChanged: (value) {
+                              final val = int.tryParse(value);
+                              if (val != null && val > 0) {
+                                setState(() => _quickAdd1 = val);
+                              }
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextFormField(
+                            initialValue: _quickAdd2.toString(),
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: "Button 2 (ml)",
+                              suffixText: "ml",
+                              border: OutlineInputBorder(),
+                            ),
+                            onChanged: (value) {
+                              final val = int.tryParse(value);
+                              if (val != null && val > 0) {
+                                setState(() => _quickAdd2 = val);
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
 
                   // ==== BİLDİRİM AYARLARI ====
                   _ProfileCard(
@@ -450,16 +563,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          ref.watch(themeProvider) == ThemeMode.dark
+                          _selectedTheme == ThemeMode.dark
                               ? AppLocalizations.of(context)!.darkMode
                               : AppLocalizations.of(context)!.lightMode,
                           style: theme.textTheme.bodyMedium,
                         ),
                         Switch(
-                          value: ref.watch(themeProvider) == ThemeMode.dark,
+                          value: _selectedTheme == ThemeMode.dark,
                           activeColor: const Color(0xFF2563EB),
                           onChanged: (value) {
-                            ref.read(themeProvider.notifier).toggleTheme();
+                            setState(() {
+                              _selectedTheme = value ? ThemeMode.dark : ThemeMode.light;
+                            });
                           },
                         ),
                       ],
@@ -476,32 +591,79 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          ref.watch(languageProvider).languageCode == 'tr'
+                          _selectedLocale.languageCode == 'tr'
                               ? 'Türkçe'
                               : 'English',
                           style: theme.textTheme.bodyMedium,
                         ),
                         DropdownButton<Locale>(
-                          value: ref.watch(languageProvider),
+                          value: _selectedLocale,
                           onChanged: (Locale? newLocale) {
                             if (newLocale != null) {
-                              ref.read(languageProvider.notifier).setLanguage(newLocale);
+                              setState(() => _selectedLocale = newLocale);
                             }
                           },
                           items: const [
                             DropdownMenuItem(
                               value: Locale('en'),
-                              child: Text('English'),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('🇺🇸', style: TextStyle(fontSize: 18)),
+                                  SizedBox(width: 8),
+                                  Text('English'),
+                                ],
+                              ),
                             ),
                             DropdownMenuItem(
                               value: Locale('tr'),
-                              child: Text('Türkçe'),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('🇹🇷', style: TextStyle(fontSize: 18)),
+                                  SizedBox(width: 8),
+                                  Text('Türkçe'),
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ],
                     ),
                   ),
+                  // ==== WATER COLOR AYARLARI ====
+                  _ProfileCard(
+                    title: AppLocalizations.of(context)!.waterColor,
+                    subtitle: AppLocalizations.of(context)!.waterColorSubtitle,
+                    child: SizedBox(
+                      height: 50,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          const Color(0xFF2285FE), // Default vibrant blue
+                          const Color(0xFF00E5FF), // Cyan Accent
+                          const Color(0xFF1DE9B6), // Teal Accent
+                          const Color(0xFF76FF03), // Light Green Accent
+                          const Color(0xFFFFEA00), // Yellow Accent
+                          const Color(0xFFFF9100), // Orange Accent
+                          const Color(0xFFFF3D00), // Deep Orange Accent
+                          const Color(0xFFFF1744), // Red Accent
+                          const Color(0xFFF50057), // Pink Accent
+                          const Color(0xFFD500F9), // Purple Accent
+                          const Color(0xFF651FFF), // Deep Purple Accent
+                        ].map((color) => _ColorOption(
+                          color: color,
+                          isSelected: _selectedWaterColor.value == color.value,
+                          onTap: () {
+                            setState(() => _selectedWaterColor = color);
+                          },
+                        )).toList(),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
                 ],
               ),
             ),
@@ -510,7 +672,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         floatingActionButton: _hasChanges
             ? FloatingActionButton.extended(
                 onPressed: _saveChanges,
-                icon: const Icon(Icons.save),
                 label: Text(AppLocalizations.of(context)!.save),
                 backgroundColor: const Color(0xFF2563EB),
               )
@@ -654,6 +815,47 @@ class _SubscriptionOptionState extends State<_SubscriptionOption> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ColorOption extends StatelessWidget {
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ColorOption({
+    required this.color,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(right: 12),
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: isSelected
+              ? Border.all(color: Theme.of(context).primaryColor, width: 3)
+              : Border.all(color: Colors.transparent),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.4),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: isSelected
+            ? const Icon(Icons.check, color: Colors.white, size: 24)
+            : null,
       ),
     );
   }
