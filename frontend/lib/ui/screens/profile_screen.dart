@@ -159,12 +159,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       case "plus":
         title = "Plus Plan";
         price = "\$1.99/mo";
-        benefits = ["Ad-free Experience", "Advanced Statistics", "Custom Drink Types", "Priority Support"];
+        benefits = [
+          "All Basic Features",
+          "Daha az reklam",
+          "Akıllı bildirimler",
+          "Bazı temalara erişim",
+          "Bazı damlacık renklerin erişim",
+          "Özel renkli isim",
+        ];
         break;
       case "pro":
         title = "Pro Plan";
         price = "\$2.99/mo";
-        benefits = ["All Plus Features", "AI Hydration Insights", "Wearable Integration", "Team Challenges"];
+        benefits = [
+          "Reklamsız kullanım",
+          "All Plus Features",
+          "Özel değerlendirme",
+          "Spor kısmına tam erişim",
+          "Özel renkli isim",
+          "Özel damlacık renklerine tam erişim",
+          "Özel damlacık renklerine tam erişim"
+          ];
         break;
     }
 
@@ -468,10 +483,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ),
                         ),
                         Slider(
-                          value: _dailyGoal.toDouble(),
+                          value: _dailyGoal.toDouble().clamp(1200, 6000),
                           min: 1200,
-                          max: 4000,
-                          divisions: (4000 - 1200) ~/ 200,
+                          max: 6000,
+                          divisions: (6000 - 1200) ~/ 200,
                           label: '$_dailyGoal ml',
                           onChanged: (value) {
                             setState(() => _dailyGoal = value.round());
@@ -610,7 +625,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             'freeLight': false,
                             'freeDark': false,
                           },
-                        ].map((group) {
+                        ].asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final group = entry.value;
                           final name = group['name'] as String;
                           final lightKey = group['lightKey'] as String;
                           final darkKey = group['darkKey'] as String;
@@ -619,6 +636,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           final freeLight = group['freeLight'] as bool;
                           final freeDark = group['freeDark'] as bool;
                           final isPro = subscriptionPlan == 'pro';
+                          final isPlus = subscriptionPlan == 'plus';
 
                           Widget buildHalf({
                             required String key,
@@ -626,7 +644,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             required bool isFree,
                             required bool isTop,
                           }) {
-                            final isUnlocked = isFree || isPro;
+                            // Unlock if free (standard), Pro, or Plus (first 3 themes: index 0, 1, 2)
+                            final isUnlocked = isFree || isPro || (isPlus && index < 3);
                             final isSelected = _selectedTheme == key;
 
                             return Expanded(
@@ -741,39 +760,39 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           _selectedLocale.languageCode == 'tr'
                               ? 'Türkçe'
                               : 'English',
-                          style: theme.textTheme.bodyMedium,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                        DropdownButton<Locale>(
-                          value: _selectedLocale,
-                          onChanged: (Locale? newLocale) {
-                            if (newLocale != null) {
-                              setState(() => _selectedLocale = newLocale);
-                            }
-                          },
-                          items: const [
-                            DropdownMenuItem(
-                              value: Locale('en'),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text('🇺🇸', style: TextStyle(fontSize: 18)),
-                                  SizedBox(width: 8),
-                                  Text('English'),
-                                ],
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: theme.cardColor,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                          ),
+                          child: DropdownButton<Locale>(
+                            value: _selectedLocale,
+                            underline: const SizedBox(), // Hide default underline
+                            icon: const Icon(Icons.keyboard_arrow_down_rounded),
+                            isDense: true,
+                            borderRadius: BorderRadius.circular(12),
+                            onChanged: (Locale? newLocale) {
+                              if (newLocale != null) {
+                                setState(() => _selectedLocale = newLocale);
+                              }
+                            },
+                            items: const [
+                              DropdownMenuItem(
+                                value: Locale('en'),
+                                child: Text('English', style: TextStyle(fontWeight: FontWeight.w500)),
                               ),
-                            ),
-                            DropdownMenuItem(
-                              value: Locale('tr'),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text('🇹🇷', style: TextStyle(fontSize: 18)),
-                                  SizedBox(width: 8),
-                                  Text('Türkçe'),
-                                ],
+                              DropdownMenuItem(
+                                value: Locale('tr'),
+                                child: Text('Türkçe', style: TextStyle(fontWeight: FontWeight.w500)),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -803,7 +822,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ].asMap().entries.map((entry) {
                           final int index = entry.key;
                           final Color color = entry.value;
-                          final bool isUnlocked = (subscriptionPlan == 'pro') || (index == 0);
+                          // Unlock if Pro, index 0 (default), or Plus (first 3 colors)
+                          final bool isUnlocked = (subscriptionPlan == 'pro') || (index == 0) || (subscriptionPlan == 'plus' && index < 3);
 
                           return Stack(
                             children: [
