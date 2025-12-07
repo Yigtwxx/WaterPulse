@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waterpulse/l10n/generated/app_localizations.dart';
 
 class StreakCard extends StatelessWidget {
   final bool loading;
@@ -28,7 +29,7 @@ class StreakCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -50,8 +51,8 @@ class StreakCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _StatTile(
-                        label: 'Current streak',
-                        value: '$currentStreak days',
+                        label: AppLocalizations.of(context)!.currentStreak,
+                        value: '$currentStreak ${AppLocalizations.of(context)!.days}',
                         icon: Icons.local_fire_department_outlined,
                         color: Colors.orange.shade400,
                       ),
@@ -59,8 +60,8 @@ class StreakCard extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _StatTile(
-                        label: 'Best streak',
-                        value: '$bestStreak days',
+                        label: AppLocalizations.of(context)!.bestStreak,
+                        value: '$bestStreak ${AppLocalizations.of(context)!.days}',
                         icon: Icons.military_tech_outlined,
                         color: Colors.indigo.shade400,
                       ),
@@ -69,20 +70,24 @@ class StreakCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  dailyGoal > 0 ? 'Today: $currentMl / $dailyGoal ml' : 'Today: $currentMl ml',
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: Colors.grey[700], fontWeight: FontWeight.w600),
+                  dailyGoal > 0
+                      ? '${AppLocalizations.of(context)!.homeToday}: $currentMl / $dailyGoal ml'
+                      : '${AppLocalizations.of(context)!.homeToday}: $currentMl ml',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey[700], fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Avatar skins',
-                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                  AppLocalizations.of(context)!.avatarSkins,
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
                 if (skins.isEmpty)
                   Text(
-                    'No skins yet',
-                    style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                    AppLocalizations.of(context)!.noSkins,
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: Colors.grey[600]),
                   )
                 else
                   Wrap(
@@ -90,7 +95,8 @@ class StreakCard extends StatelessWidget {
                     runSpacing: 8,
                     children: skins
                         .map((s) => _SkinChip(
-                              name: s['name']?.toString() ?? 'Skin',
+                              name: _localizeSkinName(
+                                  context, s['name']?.toString()),
                               colorHex: s['color']?.toString(),
                               unlocked: s['is_unlocked'] == true,
                               active: s['is_active'] == true,
@@ -100,6 +106,20 @@ class StreakCard extends StatelessWidget {
               ],
             ),
     );
+  }
+
+  String _localizeSkinName(BuildContext context, String? backendName) {
+    if (backendName == null) return AppLocalizations.of(context)!.defaultSkinName;
+    switch (backendName) {
+      case 'Mint Breeze':
+        return AppLocalizations.of(context)!.skinMintBreeze;
+      case 'Ocean Blue':
+        return AppLocalizations.of(context)!.skinOceanBlue;
+      case 'Sunrise':
+        return AppLocalizations.of(context)!.skinSunrise;
+      default:
+        return backendName;
+    }
   }
 }
 
@@ -121,7 +141,9 @@ class _StatTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: Theme.of(context).brightness == Brightness.dark
+            ? color.withOpacity(0.15)
+            : color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -144,7 +166,11 @@ class _StatTile extends StatelessWidget {
                     style: Theme.of(context)
                         .textTheme
                         .bodySmall
-                        ?.copyWith(color: Colors.grey[700])),
+                        ?.copyWith(
+                            color: Theme.of(context).brightness ==
+                                    Brightness.dark
+                                ? Colors.grey[400]
+                                : Colors.grey[700])),
                 Text(
                   value,
                   style: Theme.of(context)
@@ -199,7 +225,11 @@ class _SkinChip extends StatelessWidget {
           Text(
             name,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: unlocked ? Colors.grey[800] : Colors.grey,
+                  color: unlocked
+                      ? (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.grey[300]
+                          : Colors.grey[800])
+                      : Colors.grey,
                   fontWeight: FontWeight.w600,
                 ),
           ),
