@@ -8,7 +8,9 @@ import 'package:waterpulse/features/auth/screens/register_screen.dart';
 import 'package:waterpulse/features/home/home_screen.dart';
 import 'package:waterpulse/features/home/screens/achievements_screen.dart';
 import 'package:waterpulse/features/datas/screens/datas_screen.dart';
+import 'package:waterpulse/features/datas/screens/datas_screen.dart';
 import 'package:waterpulse/features/social/friends_screen.dart';
+import 'package:waterpulse/features/sports/screens/sports_screen.dart';
 
 // Private navigators
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -108,18 +110,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // 5) Sports Branch (Placeholder)
+// 5) Sports Branch
           StatefulShellBranch(
             navigatorKey: _shellNavigatorSportsKey,
             routes: [
               GoRoute(
                 path: '/sports',
                 pageBuilder: (context, state) => const NoTransitionPage(
-                  child: Scaffold(
-                    body: Center(
-                      child: Text('Sports Integration Coming Soon'),
-                    ),
-                  ),
+                  child: SportsScreen(),
                 ),
               ),
             ],
