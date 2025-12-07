@@ -8,7 +8,7 @@ EMAIL_PASSWORD = "YOUR_APP_PASSWORD"  # Gmail için App Password gerekli
 
 def send_email(to_email: str, subject: str, body: str):
     if "YOUR_EMAIL" in EMAIL_USER:
-        print(f"⚠️ Email credentials not set. Skipping email to {to_email}.")
+        print(f"[WARNING] Email credentials not set. Skipping email to {to_email}.")
         print(f"Subject: {subject}")
         print(f"Body: {body}")
         return
@@ -28,6 +28,6 @@ def send_email(to_email: str, subject: str, body: str):
         text = msg.as_string()
         server.sendmail(EMAIL_USER, to_email, text)
         server.quit()
-        print(f"✅ Email sent to {to_email}")
+        print(f"[SUCCESS] Email sent to {to_email}")
     except Exception as e:
-        print(f"❌ Failed to send email: {e}")
+        print(f"[ERROR] Failed to send email: {e}")
