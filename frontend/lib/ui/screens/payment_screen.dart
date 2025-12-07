@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:waterpulse/features/auth/providers/auth_provider.dart';
 import 'package:waterpulse/services/api_client.dart';
 import 'package:waterpulse/l10n/generated/app_localizations.dart';
+import 'package:flutter/services.dart';
 
 class PaymentScreen extends ConsumerStatefulWidget {
   final String plan;
@@ -145,11 +146,17 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                   labelText: "Card Number",
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.credit_card),
+                  counterText: "", // Hide character counter
                 ),
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(16), // 16 digits
+                  CardNumberInputFormatter(),
+                ],
                 validator: (value) {
                   if (value == null || value.isEmpty) return "Required";
-                  if (value.length < 16) return "Invalid card number";
+                  if (value.replaceAll(' ', '').length < 16) return "Invalid card number";
                   return null;
                 },
               ),
@@ -165,10 +172,17 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                         labelText: "Expiry (MM/YY)",
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.calendar_today),
+                        counterText: "",
                       ),
-                      keyboardType: TextInputType.datetime,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(4), // 4 digits (MMYY)
+                        ExpiryDateInputFormatter(),
+                      ],
                       validator: (value) {
                         if (value == null || value.isEmpty) return "Required";
+                        if (value.length < 5) return "Invalid"; // MM/YY is 5 chars
                         return null;
                       },
                     ),
@@ -182,9 +196,14 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                         labelText: "CVV",
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.lock),
+                        counterText: "",
                       ),
                       keyboardType: TextInputType.number,
                       obscureText: true,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(3),
+                      ],
                       validator: (value) {
                         if (value == null || value.isEmpty) return "Required";
                         if (value.length < 3) return "Invalid CVV";
@@ -237,6 +256,61 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class CardNumberInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.selection.baseOffset == 0) {
+      return newValue;
+    }
+
+    String enteredData = newValue.text; // Actual digits (because of digitsOnly before this)
+    StringBuffer buffer = StringBuffer();
+
+    for (int i = 0; i < enteredData.length; i++) {
+        buffer.write(enteredData[i]);
+        int index = i + 1;
+        if (index % 4 == 0 && enteredData.length != index) {
+            buffer.write(" "); // Space
+        }
+    }
+    
+    return TextEditingValue(
+        text: buffer.toString(),
+        selection: TextSelection.collapsed(offset: buffer.toString().length),
+    );
+  }
+}
+
+class ExpiryDateInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    
+    String newText = newValue.text;
+    
+    if (newText.length > 0) {
+       if (newText.length > 4) { // Should be caught by LengthLimiting before, but safety
+         return oldValue;
+       }
+    }
+
+    StringBuffer buffer = StringBuffer();
+    for (int i = 0; i < newText.length; i++) {
+      buffer.write(newText[i]);
+      int nonZeroIndex = i + 1;
+      if (nonZeroIndex % 2 == 0 && nonZeroIndex != newText.length) {
+        buffer.write('/');
+      }
+    }
+
+    return TextEditingValue(
+      text: buffer.toString(),
+      selection: TextSelection.collapsed(offset: buffer.toString().length),
     );
   }
 }
