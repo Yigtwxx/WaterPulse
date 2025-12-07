@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:waterpulse/features/home/providers/achievements_provider.dart';
+import 'package:waterpulse/features/home/providers/water_provider.dart';
+import 'package:waterpulse/features/auth/providers/auth_provider.dart';
+import 'package:waterpulse/features/social/providers/friends_provider.dart';
 import 'package:waterpulse/l10n/generated/app_localizations.dart';
 
 class AchievementsScreen extends ConsumerWidget {
@@ -9,9 +12,111 @@ class AchievementsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(achievementsProvider);
+    final waterState = ref.watch(waterProvider);
+    final friendsState = ref.watch(friendsProvider);
+    
     final loading = state.isLoading;
-    final achievements = state.achievements;
+    final backendAchievements = state.achievements;
     final currentStreak = state.currentStreak;
+    final todayTotal = waterState.todayTotal;
+    final dailyGoal = ref.read(authProvider).value?.dailyGoalMl ?? 2400;
+    
+    final friendCount = friendsState.leaderboard.length > 1 ? friendsState.leaderboard.length - 1 : 0;
+
+    final allAchievements = [
+      {'key': 'first_log', 'default': AppLocalizations.of(context)!.achFirstLog},
+      {'key': '500ml', 'default': AppLocalizations.of(context)!.ach500ml},
+      {'key': 'goal_reached', 'default': AppLocalizations.of(context)!.achGoalReached},
+      {'key': 'marathon', 'default': AppLocalizations.of(context)!.achMarathon},
+      {'key': 'hippo', 'default': AppLocalizations.of(context)!.achHippo}, 
+      {'key': 'tsunami', 'default': AppLocalizations.of(context)!.achTsunami},
+      {'key': 'goal_1_day', 'default': AppLocalizations.of(context)!.achGoal1Day},
+      {'key': 'goal_7_days', 'default': AppLocalizations.of(context)!.achGoal7Days},
+      {'key': 'goal_30_days', 'default': AppLocalizations.of(context)!.achGoal30Days},
+      {'key': 'goal_90_days', 'default': AppLocalizations.of(context)!.achGoal90Days},
+      {'key': 'social_1', 'default': AppLocalizations.of(context)!.achSocial1},
+      {'key': 'social_5', 'default': AppLocalizations.of(context)!.achSocial5},
+      {'key': 'friend_streak_3', 'default': AppLocalizations.of(context)!.achFriendStreak3},
+      {'key': 'early_bird', 'default': AppLocalizations.of(context)!.achEarlyBird},
+      {'key': 'night_owl', 'default': AppLocalizations.of(context)!.achNightOwl},
+      {'key': 'weekend_warrior', 'default': AppLocalizations.of(context)!.achWeekendWarrior},
+    ];
+
+    // Merge backend status
+    final displayList = allAchievements.map((def) {
+      // Find matching backend achievement
+      final match = backendAchievements.firstWhere(
+        (ba) {
+             final desc = (ba['description'] ?? '').toString().toLowerCase();
+             final target = def['default'].toString().toLowerCase();
+             return desc.contains(target);
+        },
+        orElse: () => {},
+      );
+      
+      final backendUnlocked = match.isNotEmpty;
+      double progress = 0.0;
+      
+      final key = def['key'];
+      switch(key) {
+          case 'first_log':
+             progress = (currentStreak > 0 || todayTotal > 0) ? 1.0 : 0.0;
+             break;
+          case '500ml':
+             progress = (todayTotal / 500).clamp(0.0, 1.0);
+             break;
+          case 'goal_reached':
+             progress = (todayTotal / dailyGoal).clamp(0.0, 1.0);
+             break;
+          case 'goal_1_day':
+             progress = (currentStreak / 1).clamp(0.0, 1.0);
+             break;
+          case 'goal_7_days':
+             progress = (currentStreak / 7).clamp(0.0, 1.0);
+             break;
+          case 'goal_30_days':
+             progress = (currentStreak / 30).clamp(0.0, 1.0);
+             break;
+          case 'goal_90_days':
+             progress = (currentStreak / 90).clamp(0.0, 1.0);
+             break;
+          case 'marathon':
+             progress = (todayTotal / 3000).clamp(0.0, 1.0);
+             break;
+          case 'hippo':
+             progress = (todayTotal / 4000).clamp(0.0, 1.0);
+             break;
+          case 'tsunami':
+             progress = (todayTotal / 5000).clamp(0.0, 1.0);
+             break;
+          case 'social_1':
+             progress = (friendCount / 1).clamp(0.0, 1.0);
+             break;
+          case 'social_5':
+             progress = (friendCount / 5).clamp(0.0, 1.0);
+             break;
+          case 'friend_streak_3':
+             progress = 0.0; 
+             break;
+          default:
+             progress = 0.0;
+      }
+
+      // If backend says unlocked, force 100%
+      if (backendUnlocked) {
+        progress = 1.0;
+      }
+
+      // Effectively unlocked if backend says so OR progress is 100%
+      final isUnlocked = backendUnlocked || progress >= 1.0;
+      
+      return {
+        'key': def['key'],
+        'default': def['default'],
+        'is_unlocked': isUnlocked,
+        'progress': progress,
+      };
+    }).toList();
 
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.achievements)),
@@ -36,10 +141,44 @@ class AchievementsScreen extends ConsumerWidget {
           onRefresh: () => ref.read(achievementsProvider.notifier).loadData(),
           child: ListView(
             children: [
-              _StreakTextAchievements(currentStreak: currentStreak),
-              const SizedBox(height: 24),
-              _StreakMedallions(currentStreak: currentStreak),
-              const SizedBox(height: 24),
+              // Total Cups Won Indicator (Top Left)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardTheme.color,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.emoji_events, color: Colors.amber, size: 24),
+                      const SizedBox(width: 8),
+                      Text(
+                        // Count unlocked achievements (is_unlocked == true)
+                        "Total Cups Won: ${displayList.where((e) => e['is_unlocked'] as bool).length}", // TODO: Localize
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // _StreakTextAchievements and _StreakMedallions removed as per user request
+              // _StreakTextAchievements(currentStreak: currentStreak),
+              // const SizedBox(height: 24),
+              // _StreakMedallions(currentStreak: currentStreak),
+              // const SizedBox(height: 24),
               Text(
                 AppLocalizations.of(context)!.allAchievements,
                 style: Theme.of(context)
@@ -48,33 +187,81 @@ class AchievementsScreen extends ConsumerWidget {
                     ?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 12),
-              if (loading)
+              if (loading && backendAchievements.isEmpty)
                 const Center(child: CircularProgressIndicator())
-              else if (achievements.isEmpty)
-                Text(AppLocalizations.of(context)!.noAchievements)
               else
-                ...achievements.map((a) {
-                  final name = a['name'] ?? 'Unknown';
-                  final desc = _localizeAchievementDesc(
-                      context, a['description']?.toString());
-                  final unlocked = a['is_unlocked'] == true;
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      leading: Icon(
-                        unlocked ? Icons.emoji_events : Icons.lock,
-                        color: unlocked ? Colors.orange : Colors.grey,
+                ...displayList.map((a) {
+                  final key = a['key'] as String;
+                  final unlocked = a['is_unlocked'] as bool;
+                  final progress = a['progress'] as double;
+                  final (name, desc) = _localizeAchievement(context, key);
+                  
+                  return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: unlocked
+                            ? [
+                                BoxShadow(
+                                  color: Colors.orange.withOpacity(0.4),
+                                  blurRadius: 10,
+                                  spreadRadius: 1,
+                                )
+                              ]
+                            : null,
                       ),
-                      title: Text(name),
-                      subtitle: Text(desc),
-                      trailing: unlocked
-                          ? const Icon(Icons.check_circle, color: Colors.green)
-                          : null,
-                    ),
-                  );
+                      child: Card(
+                        margin: EdgeInsets.zero,
+                        elevation: unlocked ? 4 : 1,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: unlocked
+                              ? const BorderSide(color: Colors.orange, width: 1.5)
+                              : BorderSide.none,
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                                color: unlocked ? Colors.orange.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              unlocked ? Icons.emoji_events : Icons.lock,
+                              color: unlocked ? Colors.orange : Colors.grey,
+                            ),
+                          ),
+                          title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text(desc),
+                          trailing: unlocked
+                              ? const Icon(Icons.check_circle, color: Colors.green, size: 28)
+                              : SizedBox(
+                                  width: 48,
+                                  height: 48,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                        CircularProgressIndicator(
+                                            value: progress,
+                                            backgroundColor: Colors.grey[200],
+                                            color: Colors.blueAccent,
+                                            strokeWidth: 4,
+                                        ),
+                                        Text(
+                                            "${(progress * 100).toInt()}%",
+                                            style: const TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.grey
+                                            ),
+                                        )
+                                    ],
+                                  ),
+                              ),
+                        ),
+                      ),
+                    );
                 }),
             ],
           ),
@@ -83,31 +270,44 @@ class AchievementsScreen extends ConsumerWidget {
     );
   }
 
-  String _localizeAchievementDesc(BuildContext context, String? backendDesc) {
-    if (backendDesc == null) return '';
-    // Backend'den gelen string ile eşleşme
-    if (backendDesc.contains('daily water intake goal')) {
-      return AppLocalizations.of(context)!.achGoalReached;
+  (String, String) _localizeAchievement(BuildContext context, String key) {
+    final loc = AppLocalizations.of(context)!;
+    switch (key) {
+      case 'first_log':
+        return (loc.achFirstLog, loc.achFirstLogDesc);
+      case '500ml':
+        return (loc.ach500ml, loc.ach500mlDesc);
+      case 'goal_reached':
+        return (loc.achGoalReached, loc.achGoalReachedDesc);
+      case 'goal_1_day':
+        return (loc.achGoal1Day, loc.achGoal1DayDesc);
+      case 'goal_7_days':
+        return (loc.achGoal7Days, loc.achGoal7DaysDesc);
+      case 'goal_30_days':
+        return (loc.achGoal30Days, loc.achGoal30DaysDesc);
+      case 'goal_90_days':
+        return (loc.achGoal90Days, loc.achGoal90DaysDesc);
+      case 'early_bird':
+        return (loc.achEarlyBird, loc.achEarlyBirdDesc);
+      case 'night_owl':
+        return (loc.achNightOwl, loc.achNightOwlDesc);
+      case 'weekend_warrior':
+        return (loc.achWeekendWarrior, loc.achWeekendWarriorDesc);
+      case 'marathon':
+        return (loc.achMarathon, loc.achMarathonDesc);
+      case 'hippo':
+        return (loc.achHippo, loc.achHippoDesc);
+      case 'tsunami':
+        return (loc.achTsunami, loc.achTsunamiDesc);
+      case 'social_1':
+        return (loc.achSocial1, loc.achSocial1Desc);
+      case 'social_5':
+        return (loc.achSocial5, loc.achSocial5Desc);
+      case 'friend_streak_3':
+        return (loc.achFriendStreak3, loc.achFriendStreak3Desc);
+      default:
+        return ("Unknown", "Unknown achievement");
     }
-    if (backendDesc.contains('First water log')) {
-      return AppLocalizations.of(context)!.achFirstLog;
-    }
-    if (backendDesc.contains('500 ml')) {
-      return AppLocalizations.of(context)!.ach500ml;
-    }
-    if (backendDesc.contains('goal 1 day')) {
-      return AppLocalizations.of(context)!.achGoal1Day;
-    }
-    if (backendDesc.contains('goal 7 days')) {
-      return AppLocalizations.of(context)!.achGoal7Days;
-    }
-    if (backendDesc.contains('goal 30 days')) {
-      return AppLocalizations.of(context)!.achGoal30Days;
-    }
-    if (backendDesc.contains('goal 90 days')) {
-      return AppLocalizations.of(context)!.achGoal90Days;
-    }
-    return backendDesc;
   }
 }
 
@@ -192,6 +392,12 @@ class _Medallion extends StatelessWidget {
           width: 1.2,
         ),
         boxShadow: [
+          if (unlocked)
+            BoxShadow(
+              color: color.withOpacity(0.5),
+              blurRadius: 12,
+              spreadRadius: 2,
+            ),
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
             blurRadius: 6,
