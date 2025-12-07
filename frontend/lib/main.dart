@@ -46,15 +46,15 @@ class WaterPulseApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeProvider);
+    final themeKey = ref.watch(themeProvider);
+    final themeData = AppTheme.getTheme(themeKey);
     final locale = ref.watch(languageProvider);
 
     return MaterialApp.router(
       title: 'WaterPulse',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode,
+      theme: themeData,
+      themeMode: ThemeMode.light, // Always use the 'theme' property which we update dynamically
       locale: locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
