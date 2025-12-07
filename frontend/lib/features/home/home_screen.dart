@@ -36,7 +36,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  // Backend ile konuşan local SQLite + API client
+  // Backend ile konuşan API client
   final ApiClient apiClient = ApiClient();
 
   int _userId = 1; // Default to 1, load from prefs
@@ -53,6 +53,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _weekLoading = false;
 
 
+  DateTime _selectedDate = DateTime.now();
+  List<dynamic> _dailyLogs = [];
   Map<String, dynamic>? _streakSummary;
   List<dynamic> _avatarSkins = [];
   List<Map<String, dynamic>> _weekTotals = [];
@@ -70,15 +72,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final user = ref.read(authProvider).value;
     if (user != null) {
       setState(() => _userId = user.id);
-      ref.read(waterProvider.notifier).loadTodayTotal(_userId);
+      _loadDayData(_selectedDate); 
       _loadMetaPanels();
       _loadWeekTotals();
     }
   }
 
-  Future<void> _loadTodayTotal() async {
-    await ref.read(waterProvider.notifier).loadTodayTotal(_userId);
+  Future<void> _loadDayData(DateTime date) async {
+    if (!mounted) return;
+    // Reset logs to avoid showing old data while loading
+    setState(() {
+       _dailyLogs = [];
+       _selectedDate = date;
+    });
+    
+    // Load total for that day
+    await ref.read(waterProvider.notifier).loadTodayTotal(_userId, date: date);
+
+    // Load detailed logs
+    try {
+      final logs = await apiClient.getDailyLogs(userId: _userId, date: date);
+      if (mounted) {
+        setState(() => _dailyLogs = logs);
+      }
+    } catch (_) {
+      // quiet fail
+    }
   }
+
+  bool _isSameDay(DateTime d1, DateTime d2) {
+      return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
+  }
+
+
 
   Future<void> _loadMetaPanels() async {
     if (!mounted) return;
@@ -163,12 +189,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _addWater(int amount) async {
     if (!mounted) return;
     
+    // Optimistic or real update via provider
     await ref.read(waterProvider.notifier).addWater(_userId, amount);
 
     _bumpTodayWeekTotal(amount);
 
     await _loadMetaPanels();
     _loadWeekTotals(showLoading: false);
+
+    // Refresh logs if we are viewing today
+    if (_isSameDay(_selectedDate, DateTime.now())) {
+      _loadDayData(_selectedDate); 
+    }
   }
 
   // Quick actions tıklamaları -> ilgili taba geç
@@ -186,20 +218,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (!mounted) return;
     showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: _selectedDate,
       firstDate: DateTime(DateTime.now().year - 1),
-      lastDate: DateTime(DateTime.now().year + 1),
+      lastDate: DateTime.now(), 
     ).then((selectedDate) {
       if (!mounted || selectedDate == null) return;
-
-      final formatted =
-          '${selectedDate.day.toString().padLeft(2, '0')}.${selectedDate.month.toString().padLeft(2, '0')}.${selectedDate.year}';
-
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text('${AppLocalizations.of(context)!.selectDate}: $formatted')),
-        );
+      _loadDayData(selectedDate);
     });
   }
 
@@ -213,6 +237,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final achievedToday = currentMl >= _goalMl;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -220,12 +246,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           end: Alignment.bottomCenter,
           colors: isDark
               ? [
-                  const Color(0xFF0F172A), // Slate 900
-                  const Color(0xFF1E293B), // Slate 800
+                  Theme.of(context).scaffoldBackgroundColor,
+                  Theme.of(context).cardColor,
                 ]
-              : [
-                  const Color(0xFFEFF6FF), // Blue 50
-                  const Color(0xFFFFFFFF), // White
+            : [
+                  Theme.of(context).scaffoldBackgroundColor,
+                  Theme.of(context).cardColor,
                 ],
         ),
       ),
@@ -237,28 +263,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             // ==========================
             // PROFİL ALTINDA CALENDAR BUTONU
             // ==========================
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: _onCalendarTap,
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  foregroundColor: Theme.of(context).primaryColor,
-                  backgroundColor: Theme.of(context).cardColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                icon: const Icon(
-                  Icons.calendar_today_outlined,
-                  size: 18,
-                ),
-                label: const Text('Calendar'),
-              ),
-            ),
+
 
             const SizedBox(height: 12),
 
@@ -350,6 +355,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ?.copyWith(
                             color: isDark ? Colors.grey[400] : Colors.grey[600]),
                   ),
+
+
                 ],
               ),
             ),
