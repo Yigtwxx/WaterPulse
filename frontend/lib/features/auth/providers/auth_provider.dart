@@ -78,15 +78,15 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
     try {
       // Create a random guest user
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final randomId = (1000 + (timestamp % 9000)).toString(); // Simple random suffix
+      final randomId = (10000 + (timestamp % 90000)).toString();
       final email = "guest_$timestamp@waterpulse.app";
       final password = "guest_$timestamp"; // Secure enough for a guest
 
       final userData = await _apiClient.createUser({
         "email": email,
         "password": password,
-        "name": "Guest",
-        "surname": "User",
+        "name": "Guest$randomId", // e.g. Guest12345
+        "surname": "",
         "daily_goal_ml": 2000,
         "preferred_cup_ml": 250,
         "language": "en",
