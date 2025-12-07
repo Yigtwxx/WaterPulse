@@ -27,12 +27,12 @@ class FriendsScreen extends ConsumerWidget {
             end: Alignment.bottomCenter,
             colors: Theme.of(context).brightness == Brightness.dark
                 ? [
-                    const Color(0xFF0F172A),
-                    const Color(0xFF1E293B),
+                    Theme.of(context).scaffoldBackgroundColor,
+                    Theme.of(context).cardColor,
                   ]
                 : [
-                    const Color(0xFFEFF6FF),
-                    const Color(0xFFFFFFFF),
+                    Theme.of(context).scaffoldBackgroundColor,
+                    Theme.of(context).cardColor,
                   ],
           ),
         ),
