@@ -10,6 +10,8 @@ class User {
   final String? activityLevel;
   final int dailyGoalMl;
   final int preferredCupMl;
+  final int quickAdd1Ml;
+  final int quickAdd2Ml;
   final String language;
   final String subscriptionPlan;
   final bool isVerified;
@@ -27,6 +29,8 @@ class User {
     this.activityLevel,
     required this.dailyGoalMl,
     required this.preferredCupMl,
+    required this.quickAdd1Ml,
+    required this.quickAdd2Ml,
     required this.language,
     required this.subscriptionPlan,
     required this.isVerified,
@@ -46,6 +50,8 @@ class User {
       activityLevel: json['activity_level'],
       dailyGoalMl: json['daily_goal_ml'] ?? 2000,
       preferredCupMl: json['preferred_cup_ml'] ?? 250,
+      quickAdd1Ml: json['quick_add_1_ml'] ?? 250,
+      quickAdd2Ml: json['quick_add_2_ml'] ?? 500,
       language: json['language'] ?? 'en',
       subscriptionPlan: json['subscription_plan'] ?? 'basic',
       isVerified: json['is_verified'] ?? false,
@@ -66,8 +72,9 @@ class User {
       'activity_level': activityLevel,
       'daily_goal_ml': dailyGoalMl,
       'preferred_cup_ml': preferredCupMl,
+      'quick_add_1_ml': quickAdd1Ml,
+      'quick_add_2_ml': quickAdd2Ml,
       'language': language,
-      'subscription_plan': subscriptionPlan,
       'subscription_plan': subscriptionPlan,
       'is_verified': isVerified,
       'friend_code': friendCode,
