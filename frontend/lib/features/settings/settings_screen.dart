@@ -10,7 +10,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(authProvider);
-    final themeMode = ref.watch(themeProvider);
+    final themeKey = ref.watch(themeProvider);
     final locale = ref.watch(languageProvider);
 
     return Scaffold(
@@ -32,24 +32,20 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.brightness_6),
             title: const Text('Theme'),
-            trailing: DropdownButton<ThemeMode>(
-              value: themeMode,
-              onChanged: (ThemeMode? newMode) {
+            trailing: DropdownButton<String>(
+              value: themeKey,
+              onChanged: (String? newMode) {
                 if (newMode != null) {
                   ref.read(themeProvider.notifier).setTheme(newMode);
                 }
               },
               items: const [
                 DropdownMenuItem(
-                  value: ThemeMode.system,
-                  child: Text('System'),
-                ),
-                DropdownMenuItem(
-                  value: ThemeMode.light,
+                  value: 'light',
                   child: Text('Light'),
                 ),
                 DropdownMenuItem(
-                  value: ThemeMode.dark,
+                  value: 'dark',
                   child: Text('Dark'),
                 ),
               ],
@@ -62,7 +58,7 @@ class SettingsScreen extends ConsumerWidget {
               value: locale,
               onChanged: (Locale? newLocale) {
                 if (newLocale != null) {
-                  ref.read(languageProvider.notifier).setLocale(newLocale);
+                  ref.read(languageProvider.notifier).setLanguage(newLocale);
                 }
               },
               items: const [
@@ -167,6 +163,5 @@ class SettingsScreen extends ConsumerWidget {
       
       await ref.read(authProvider.notifier).updateUser(user.id, updates);
     }
-  }
   }
 }
