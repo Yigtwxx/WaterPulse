@@ -9,6 +9,9 @@ import 'package:waterpulse/l10n/generated/app_localizations.dart';
 import 'package:waterpulse/services/api_client.dart';
 import 'package:waterpulse/ui/screens/payment_screen.dart';
 import 'package:waterpulse/features/settings/providers/water_color_provider.dart';
+import 'package:waterpulse/features/settings/widgets/notification_settings_section.dart';
+import 'package:waterpulse/ui/widgets/premium_username.dart';
+import 'package:waterpulse/ui/widgets/edit_profile_dialog.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key, required this.initialGoal});
@@ -144,6 +147,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
     );
   }
+
 
   void _showSubscriptionDetails(String plan, Color planColor) {
     String title = "";
@@ -356,11 +360,36 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              username,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: PremiumUsername(
+                                    username: username,
+                                    subscriptionPlan: subscriptionPlan ?? 'basic',
+                                    title: user?.selectedTitle,
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.edit, size: 16),
+                                  onPressed: () async {
+                                    final result = await showDialog<bool>(
+                                      context: context,
+                                      builder: (_) => EditProfileDialog(
+                                        userId: user.id,
+                                        currentName: user.name ?? user.email.split('@')[0],
+                                        currentTitle: user.selectedTitle,
+                                      ),
+                                    );
+                                    if (result == true) {
+                                      await ref.read(authProvider.notifier).refreshUser();
+                                    }
+                                  },
+                                  tooltip: 'Edit Profile',
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 4),
                             Row(
@@ -546,27 +575,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const SizedBox(height: 16),
 
                   // ==== BİLDİRİM AYARLARI ====
-                  _ProfileCard(
-                    title: AppLocalizations.of(context)!.reminders,
-                    subtitle: AppLocalizations.of(context)!.remindersSubtitle,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _notificationsEnabled
-                              ? AppLocalizations.of(context)!.remindersOn
-                              : AppLocalizations.of(context)!.remindersOff,
-                          style: theme.textTheme.bodyMedium,
-                        ),
-                        Switch(
-                          value: _notificationsEnabled,
-                          activeColor: const Color(0xFF2563EB),
-                          onChanged: (value) {
-                            setState(() => _notificationsEnabled = value);
-                          },
-                        ),
-                      ],
-                    ),
+                  const _ProfileCard(
+                    title: "", // Title handled inside component
+                    subtitle: "", // Subtitle handled inside component
+                    child: NotificationSettingsSection(),
                   ),
 
                   const SizedBox(height: 16),
