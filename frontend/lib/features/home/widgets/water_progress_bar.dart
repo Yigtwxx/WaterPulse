@@ -5,8 +5,10 @@
 //   WaterProgressBar(currentMl: _currentMl, goalMl: _goalMl)
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:waterpulse/features/settings/providers/water_color_provider.dart';
 
-class WaterProgressBar extends StatefulWidget {
+class WaterProgressBar extends ConsumerStatefulWidget {
   final int currentMl;
   final int goalMl;
   final bool rainActive;
@@ -19,10 +21,10 @@ class WaterProgressBar extends StatefulWidget {
   });
 
   @override
-  State<WaterProgressBar> createState() => _WaterProgressBarState();
+  ConsumerState<WaterProgressBar> createState() => _WaterProgressBarState();
 }
 
-class _WaterProgressBarState extends State<WaterProgressBar>
+class _WaterProgressBarState extends ConsumerState<WaterProgressBar>
     with SingleTickerProviderStateMixin {
   late final AnimationController _rainController;
   bool _running = false;
@@ -70,6 +72,9 @@ class _WaterProgressBarState extends State<WaterProgressBar>
         ? 0.0
         : (widget.currentMl / widget.goalMl).clamp(0.0, 1.0);
 
+    // Watch the color provider
+    final waterColor = ref.watch(waterColorProvider);
+
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0.0, end: targetProgress),
       duration: const Duration(milliseconds: 600),
@@ -89,9 +94,8 @@ class _WaterProgressBarState extends State<WaterProgressBar>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    // 🔵 damlanın etrafındaki mavi parlama
-                    color: const Color.fromARGB(255, 39, 135, 226)
-                        .withOpacity(0.20),
+                    // 🔵 damlanın etrafındaki parlama (seçilen renkte)
+                    color: waterColor.withOpacity(0.20),
                     blurRadius: 1500,
                     offset: const Offset(0, 8),
                   ),
@@ -103,14 +107,16 @@ class _WaterProgressBarState extends State<WaterProgressBar>
                   // Ana damla + içinin dolma efekti (senin painter)
                   CustomPaint(
                     size: const Size(130, 150),
-                    painter: _WaterDropPainter(clamped),
+                    painter: _WaterDropPainter(clamped, waterColor),
                   ),
 
                   // Üstten gelen küçük damlacıklar (overlay)
+                  // Pass color to splash overlay too if desired, keeping splash blue for now or match?
+                  // Let's keep rain distinct or maybe match it later. Keeping original rain for now.
                   if (widget.rainActive || _running)
                     Positioned.fill(
                       child: IgnorePointer(
-                        child: _SplashOverlay(animation: _rainController),
+                        child: _SplashOverlay(animation: _rainController, color: waterColor),
                       ),
                     ),
                 ],
@@ -139,8 +145,9 @@ class _WaterProgressBarState extends State<WaterProgressBar>
 /// Su eklendiğinde çıkan yumuşak halka efekti
 class _SplashOverlay extends StatelessWidget {
   final Animation<double> animation;
+  final Color color;
 
-  const _SplashOverlay({required this.animation});
+  const _SplashOverlay({required this.animation, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -148,18 +155,19 @@ class _SplashOverlay extends StatelessWidget {
       animation: animation,
       builder: (context, child) {
         return CustomPaint(
-          painter: _SplashPainter(animation.value),
+          painter: _SplashPainter(animation.value, color),
         );
       },
     );
   }
 }
 
-// --- MEVCUT DAMLA PAINTER'IN (HİÇ BOZMADIM, SADECE AYNEN KULLANIYORUZ) ---
+// --- MEVCUT DAMLA PAINTER ---
 class _WaterDropPainter extends CustomPainter {
   final double progress; // 0.0 - 1.0
+  final Color waterColor;
 
-  _WaterDropPainter(this.progress);
+  _WaterDropPainter(this.progress, this.waterColor);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -195,9 +203,9 @@ class _WaterDropPainter extends CustomPainter {
 
     dropPath.close();
 
-    // Arka plan rengi (boş kısım)
+    // Arka plan rengi (boş kısım) - slightly lighter version of selected color
     final Paint bgPaint = Paint()
-      ..color = const Color.fromARGB(255, 157, 197, 251)
+      ..color = waterColor.withOpacity(0.3) // Dynamic bg color
       ..style = PaintingStyle.fill;
 
     canvas.drawPath(dropPath, bgPaint);
@@ -236,12 +244,12 @@ class _WaterDropPainter extends CustomPainter {
         Rect.fromLTRB(leftX, levelY - waveHeight, rightX, bottomY);
 
     final Paint waterPaint = Paint()
-      ..shader = const LinearGradient(
+      ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Color(0xFF5FAFFE), // üst kısım daha açık mavi
-          Color.fromARGB(255, 34, 133, 254), // alt kısım mevcut mavi
+          waterColor.withOpacity(0.7), // üst kısım daha açık
+          waterColor, // alt kısım ana renk
         ],
       ).createShader(waterBounds);
 
@@ -268,15 +276,16 @@ class _WaterDropPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _WaterDropPainter oldDelegate) {
-    return oldDelegate.progress != progress;
+    return oldDelegate.progress != progress || oldDelegate.waterColor != waterColor;
   }
 }
 
 /// Halka splash painter
 class _SplashPainter extends CustomPainter {
   final double t;
+  final Color color;
 
-  _SplashPainter(this.t);
+  _SplashPainter(this.t, this.color);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -284,7 +293,7 @@ class _SplashPainter extends CustomPainter {
     final maxR = size.width * 0.42;
 
     final Paint ring = Paint()
-      ..color = const Color(0xFF3B82F6).withOpacity((1 - t).clamp(0.0, 1.0))
+      ..color = color.withOpacity((1 - t).clamp(0.0, 1.0))
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0 * (1 - t).clamp(0.3, 1.0);
 
@@ -297,6 +306,6 @@ class _SplashPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _SplashPainter oldDelegate) {
-    return oldDelegate.t != t;
+    return oldDelegate.t != t || oldDelegate.color != color;
   }
 }
