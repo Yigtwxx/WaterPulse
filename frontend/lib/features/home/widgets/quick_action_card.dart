@@ -17,8 +17,10 @@ class QuickActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Material(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(16),
       elevation: 0,
       child: InkWell(
@@ -28,7 +30,10 @@ class QuickActionCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.neonColor),
+            border: Border.all(
+              color: isDark ? const Color(0xFF1E293B) : AppTheme.neonColor,
+              width: 1,
+            ),
           ),
           child: Row(
             children: [
@@ -36,10 +41,15 @@ class QuickActionCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.08),
+                  color: isDark 
+                      ? Colors.blue.withOpacity(0.2) 
+                      : Colors.blue.withOpacity(0.08),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: Colors.blueAccent),
+                child: Icon(
+                  icon, 
+                  color: isDark ? const Color(0xFF60A5FA) : Colors.blueAccent
+                ),
               ),
               const SizedBox(width: 12),
 
@@ -53,7 +63,10 @@ class QuickActionCard extends StatelessWidget {
                       style: Theme.of(context)
                           .textTheme
                           .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w600),
+                          ?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -61,14 +74,19 @@ class QuickActionCard extends StatelessWidget {
                       style: Theme.of(context)
                           .textTheme
                           .bodySmall
-                          ?.copyWith(color: Colors.grey[600]),
+                          ?.copyWith(
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          ),
                     ),
                   ],
                 ),
               ),
 
               // Sağdaki ">" oku
-              const Icon(Icons.chevron_right, color: Colors.grey),
+              Icon(
+                Icons.chevron_right, 
+                color: isDark ? Colors.grey[500] : Colors.grey
+              ),
             ],
           ),
         ),
