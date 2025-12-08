@@ -6,6 +6,7 @@ __pycache__/
 venv/
 env/
 .env
+**/.env
 
 # Flutter / Dart
 .dart_tool/
@@ -24,7 +25,15 @@ build/
 Thumbs.db
 
 # Database
+*.db
 backend/waterpulse.db
 
 # Logs
 *.log
+
+# Debug & Temp Files
+crash_log*.txt
+verify_error*.txt
+verify_fix.txt
+check_output.txt
+backend/login_debug.txt
