@@ -44,8 +44,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // Bugünkü içilen su miktarı - Riverpod'dan geliyor
   // int _currentMl = 0;
 
-  // Günlük hedef (ARTIK DEĞİŞEBİLİR)
-  int _goalMl = 2400;
+  // Günlük hedef (AuthProvider'dan gelecek)
+  // int _goalMl = 2400;
+  // int _goalMl = 2400;
 
   // API çağrısı sırasında loading flag
   // bool _loading = false;
@@ -229,12 +230,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
 
   // Seçili taba göre gövdeyi üret
-  // Seçili taba göre gövdeyi üret
   Widget _buildBody(BuildContext context) {
     final waterState = ref.watch(waterProvider);
+    final user = ref.watch(authProvider).value;
+    final goalMl = user?.dailyGoalMl ?? 2400;
+
     final currentMl = waterState.todayTotal;
     final loading = waterState.isLoading;
-    final achievedToday = currentMl >= _goalMl;
+    final achievedToday = currentMl >= goalMl;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
 
@@ -306,7 +309,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Center(
                     child: WaterProgressBar(
                       currentMl: currentMl,
-                      goalMl: _goalMl,
+                      goalMl: goalMl,
                     ),
                   ),
 
@@ -347,7 +350,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                   // Hedef metni (tam ortalı)
                   Text(
-                    '${AppLocalizations.of(context)!.homeGoal}: $_goalMl ml',
+                    '${AppLocalizations.of(context)!.homeGoal}: $goalMl ml',
                     textAlign: TextAlign.center,
                     style: Theme.of(context)
                         .textTheme
@@ -444,7 +447,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               skins: _avatarSkins,
               goalAchievedToday: achievedToday,
               currentMl: currentMl,
-              dailyGoal: _goalMl,
+              dailyGoal: goalMl,
             ),
             
             
@@ -464,8 +467,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
 
     final waterState = ref.watch(waterProvider);
+    final user = ref.watch(authProvider).value;
+    final goalMl = user?.dailyGoalMl ?? 2400;
+
     final currentMl = waterState.todayTotal;
-    final achievedToday = currentMl >= _goalMl;
+    final achievedToday = currentMl >= goalMl;
 
     return Scaffold(
       // ÜST BAR
@@ -476,12 +482,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           Row(
             children: [
-              if (_goalMl > 0)
+              if (goalMl > 0)
                 Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: GoalBadge(
                     achieved: achievedToday,
-                    remaining: (_goalMl - currentMl).clamp(0, _goalMl),
+                    remaining: (goalMl - currentMl).clamp(0, goalMl),
                     streak: _streakSummary?['current_streak'] ?? 0,
                   ),
                 ),
@@ -497,44 +503,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     color: Color(0xFF2563EB),
                   ),
                 ),
-                onPressed: () async {
+                  onPressed: () async {
                   // ProfileScreen'den yeni goal değerini bekle
-                  final int? newGoal = await Navigator.of(context).push<int>(
+                  await Navigator.of(context).push<int>(
                     MaterialPageRoute(
-                      builder: (_) => ProfileScreen(initialGoal: _goalMl),
+                      builder: (_) => ProfileScreen(initialGoal: goalMl),
                     ),
                   );
 
                   // Reload user data
                   if (mounted) {
-                    // Refresh auth provider to get latest user data if changed
-                    // ref.refresh(authProvider); // Optional if Profile updates backend
-                    // _loadData(); // Removed to prevent resetting water data (race condition or redundant fetch)
+                    // Update UI or state if needed
                   }
-
-                  // Eğer profil ekranı bir değer döndürmediyse (back tuşu vs.)
-                  if (!mounted) return;
-                  if (newGoal == null) {
-                    // Check if user is logged out (authProvider value is null)
-                    final currentUser = ref.read(authProvider).value;
-                    if (currentUser == null) {
-                      ScaffoldMessenger.of(context)
-                        ..hideCurrentSnackBar()
-                        ..showSnackBar(
-                           SnackBar(
-                            content: Text(AppLocalizations.of(context)!.loggedOutSuccess),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                    }
-                    // If not logged out, just ignore the null return (back button without changes)
-                    return;
-                  }
-
-                  // Değer geldiyse state'i güncelle
-                  setState(() {
-                    _goalMl = newGoal;
-                  });
                 },
               ),
               const SizedBox(width: 8),
