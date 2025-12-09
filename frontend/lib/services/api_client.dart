@@ -31,7 +31,20 @@ class ApiClient {
     }
 
     // Fallback
+  // Fallback
     return localBase;
+  }
+
+  /// Generic GET request helper
+  static Future<dynamic> get(String endpoint) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final res = await http.get(uri);
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body);
+    } else {
+      throw Exception('GET $endpoint failed: ${res.statusCode}');
+    }
   }
 
   Future<Map<String, dynamic>> login(String email, String password) async {
@@ -76,7 +89,7 @@ class ApiClient {
   }
 
   // Belirli bir günün (veya bugünün) toplam su miktarını getir
-  Future<int> getDailyTotal({int userId = 1, DateTime? date}) async {
+  Future<int> getDailyTotal({required int userId, DateTime? date}) async {
     String query = '';
     if (date != null) {
       final dateStr = date.toIso8601String().split('T').first;
@@ -92,7 +105,7 @@ class ApiClient {
       throw Exception('Failed to load daily total');
     }
   }
-  Future<void> addWater({int userId = 1, required int amountMl}) async {
+  Future<void> addWater({required int userId, required int amountMl}) async {
     final uri = Uri.parse('$baseUrl/water/log');
     final body = jsonEncode({
       'user_id': userId,
@@ -110,7 +123,7 @@ class ApiClient {
     }
   }
 
-  Future<List<dynamic>> getDailyLogs({int userId = 1, DateTime? date}) async {
+  Future<List<dynamic>> getDailyLogs({required int userId, DateTime? date}) async {
     String query = '';
     if (date != null) {
       final dateStr = date.toIso8601String().split('T').first;
@@ -143,7 +156,7 @@ class ApiClient {
     throw Exception('Failed to load calendar totals');
   }
 
-  Future<Map<String, dynamic>> getStreakSummary({int userId = 1}) async {
+  Future<Map<String, dynamic>> getStreakSummary({required int userId}) async {
     final uri = Uri.parse('$baseUrl/streaks/$userId/summary');
     final res = await http.get(uri);
     if (res.statusCode == 200) {
@@ -152,7 +165,7 @@ class ApiClient {
     throw Exception('Failed to load streak summary');
   }
 
-  Future<List<dynamic>> getAchievements({int userId = 1}) async {
+  Future<List<dynamic>> getAchievements({required int userId}) async {
     final uri = Uri.parse('$baseUrl/achievements/$userId');
     final res = await http.get(uri);
     if (res.statusCode == 200) {
@@ -161,7 +174,7 @@ class ApiClient {
     throw Exception('Failed to load achievements');
   }
 
-  Future<List<dynamic>> getAvatarSkins({int userId = 1}) async {
+  Future<List<dynamic>> getAvatarSkins({required int userId}) async {
     final uri = Uri.parse('$baseUrl/avatar/skins/$userId');
     final res = await http.get(uri);
     if (res.statusCode == 200) {
@@ -264,5 +277,39 @@ class ApiClient {
       }
       throw Exception('Failed to add friend');
     }
+  }
+
+  Future<List<dynamic>> getFriends(int userId) async {
+    final uri = Uri.parse('$baseUrl/friends/list/$userId');
+    final res = await http.get(uri);
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as List<dynamic>;
+    }
+    throw Exception('Failed to load friends');
+  }
+
+  Future<void> pokeFriend(int senderId, int receiverId) async {
+    final uri = Uri.parse('$baseUrl/friends/poke');
+    final body = jsonEncode({
+      'sender_id': senderId,
+      'receiver_id': receiverId,
+    });
+    final res = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+    if (res.statusCode != 200) {
+      throw Exception('Failed to poke friend');
+    }
+  }
+
+  Future<List<dynamic>> getPendingPokes(int userId) async {
+    final uri = Uri.parse('$baseUrl/friends/pokes/$userId');
+    final res = await http.get(uri);
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body) as List<dynamic>;
+    }
+    throw Exception('Failed to load pokes');
   }
 }
