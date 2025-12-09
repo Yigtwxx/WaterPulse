@@ -5,5 +5,6 @@ from .achievement import Achievement
 from .avatar_skin import AvatarSkin
 from .friend import Friend
 from .streak import Streak
+from .poke import Poke
 
-__all__ = ["User", "WaterLog", "Achievement", "AvatarSkin", "Friend", "Streak"]
+__all__ = ["User", "WaterLog", "Achievement", "AvatarSkin", "Friend", "Streak", "Poke"]
