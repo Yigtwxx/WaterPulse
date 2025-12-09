@@ -12,6 +12,14 @@ router = APIRouter(prefix="/achievements", tags=["achievements"])
 
 @router.get("/{user_id}", response_model=List[AchievementOut])
 def list_achievements(user_id: int, db: Session = Depends(get_db)):
+    try:
+        achievement_service.sync_achievements(db, user_id)
+    except Exception as e:
+        db.rollback()
+        import traceback
+        traceback.print_exc()
+        print(f"Error syncing achievements: {e}")
+        # Continue to return list even if sync fails
     return achievement_service.list_achievements(db, user_id)
 
 
