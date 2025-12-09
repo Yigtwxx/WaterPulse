@@ -11,7 +11,9 @@ from app import models
 from app.schemas.user_schemas import UserCreate, UserOut, UserUpdate, UserLogin
 from app.utils.calc_water_goal import calculate_daily_goal_ml
 from app.core.security import get_password_hash, verify_password
+from app.core.security import get_password_hash, verify_password
 from app.utils.email_sender import send_email
+from app.utils.calc_recommendation import calculate_recommendations
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -48,6 +50,7 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
         daily_goal_ml=daily_goal,
         preferred_cup_ml=user_in.preferred_cup_ml,
         language=user_in.language,
+        friend_code=_generate_friend_code(db),
     )
     db.add(user)
     db.commit()
@@ -57,13 +60,29 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=UserOut)
 def login(user_in: UserLogin, db: Session = Depends(get_db)):
+    print(f"LOGIN ATTEMPT: {user_in.email}")
     user = db.query(models.user.User).filter(models.user.User.email == user_in.email).first()
     if not user:
+        print("LOGIN FAILED: User not found")
         raise HTTPException(status_code=404, detail="User not found")
     
-    if not verify_password(user_in.password, user.hashed_password):
+    is_valid = verify_password(user_in.password, user.hashed_password)
+    print(f"LOGIN PASSWORD VERIFICATION: {is_valid}")
+    
+    if not is_valid:
+        print("LOGIN FAILED: Incorrect password")
         raise HTTPException(status_code=400, detail="Incorrect password")
 
+    print("LOGIN SUCCESS")
+    return user
+    is_valid = verify_password(user_in.password, user.hashed_password)
+    print(f"5. Verification result: {is_valid}")
+    
+    if not is_valid:
+        print("LOGIN FAILED: Incorrect password")
+        raise HTTPException(status_code=400, detail="Incorrect password")
+
+    print("LOGIN SUCCESS")
     return user
 
 
@@ -211,3 +230,32 @@ def verify_email(user_id: int, code: str, db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": "Email verified successfully"}
+
+
+def _generate_friend_code(db: Session) -> str:
+    """Generate a unique friend code like WP-A1B2C3"""
+    while True:
+        # Generate 6 random chars (digits + uppercase)
+        chars = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        code = f"WP-{chars}"
+        
+        # Check uniqueness
+        exists = db.query(models.user.User).filter(models.user.User.friend_code == code).first()
+        if not exists:
+            return code
+
+
+@router.get("/{user_id}/recommendations")
+def get_user_recommendations(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(models.user.User).filter(models.user.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    result = calculate_recommendations(
+        weight_kg=user.weight_kg,
+        height_cm=user.height_cm,
+        age=user.age,
+        gender=user.gender,
+        activity_level=user.activity_level
+    )
+    return result
