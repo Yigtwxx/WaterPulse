@@ -104,7 +104,6 @@ def init_db() -> None:
                         timestamp=datetime.combine(day, datetime.min.time()),
                     )
                 )
-
         db.commit()
 
         # Arkadaş ilişkisi örneği
