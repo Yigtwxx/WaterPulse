@@ -29,7 +29,7 @@ Future<void> main() async {
     try {
       final notificationService = NotificationService();
       await notificationService.init();
-      await notificationService.schedulePeriodicNotification();
+      // notificationService.schedulePeriodicNotification(); (Removed)
     } catch (e) {
       debugPrint('Error initializing notifications: $e');
     }
