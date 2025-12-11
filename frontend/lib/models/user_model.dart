@@ -16,6 +16,14 @@ class User {
   final String subscriptionPlan;
   final bool isVerified;
   final String? friendCode;
+  
+  // Notification Config
+  final bool? notificationsEnabled;
+  final int? notificationInterval;
+  final int? notificationStartHour;
+  final int? notificationEndHour;
+  final String? notificationAggressiveness;
+  final String? selectedTitle;
 
   User({
     required this.id,
@@ -35,6 +43,12 @@ class User {
     required this.subscriptionPlan,
     required this.isVerified,
     this.friendCode,
+    this.notificationsEnabled,
+    this.notificationInterval,
+    this.notificationStartHour,
+    this.notificationEndHour,
+    this.notificationAggressiveness,
+    this.selectedTitle,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -56,6 +70,12 @@ class User {
       subscriptionPlan: json['subscription_plan'] ?? 'basic',
       isVerified: json['is_verified'] ?? false,
       friendCode: json['friend_code'],
+      notificationsEnabled: json['notifications_enabled'],
+      notificationInterval: json['notification_interval'],
+      notificationStartHour: json['notification_start_hour'],
+      notificationEndHour: json['notification_end_hour'],
+      notificationAggressiveness: json['notification_aggressiveness'],
+      selectedTitle: json['selected_title'],
     );
   }
 
@@ -78,6 +98,12 @@ class User {
       'subscription_plan': subscriptionPlan,
       'is_verified': isVerified,
       'friend_code': friendCode,
+      'notifications_enabled': notificationsEnabled,
+      'notification_interval': notificationInterval,
+      'notification_start_hour': notificationStartHour,
+      'notification_end_hour': notificationEndHour,
+      'notification_aggressiveness': notificationAggressiveness,
+      'selected_title': selectedTitle,
     };
   }
 }
