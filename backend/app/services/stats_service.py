@@ -100,7 +100,7 @@ class StatsService:
         data = {'Date': [], 'Amount': []}
         for log in logs:
             data['Date'].append(log.timestamp.strftime('%Y-%m-%d'))
-            data['Amount'].append(log.amount)
+            data['Amount'].append(log.amount_ml)
         
         df = pd.DataFrame(data)
         all_days = [(month_ago + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(30)]
