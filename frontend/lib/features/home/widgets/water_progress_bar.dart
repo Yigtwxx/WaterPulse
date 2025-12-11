@@ -174,104 +174,92 @@ class _WaterDropPainter extends CustomPainter {
     final double w = size.width;
     final double h = size.height;
 
-    // ==== TEARDROP ŞEKLİ ====
+    // ==== 1. TEARDROP ŞEKLİ (Clean Shape with Rounded Bottom) ====
     final Path dropPath = Path();
-
-    // Üst sivri uç
-    dropPath.moveTo(w * 0.52, 0);
-
-    // Sol yan
+    dropPath.moveTo(w * 0.5, 0); // Top Peak
+    
+    // Left curve 
     dropPath.cubicTo(
-      w * 0.15, h * 0.18, // sol üst kontrol
-      w * 0.02, h * 0.55, // sol gövde genişlik
-      w * 0.16, h * 0.86, // alt sol
+      w * 0.05, h * 0.40, // control 1 (Neck - wider and higher)
+      w * 0.02, h * 0.95, // control 2 (Belly - much wider)
+      w * 0.5, h * 1.0    // target (Bottom Center)
     );
 
-    // Alt
+    // Right curve
     dropPath.cubicTo(
-      w * 0.30, h * 1.12, // alt sol
-      w * 0.70, h * 1.12, // alt sağ
-      w * 0.84, h * 0.86, // alt sağ yukarı
+      w * 0.98, h * 0.95, // control 1 (Belly - much wider)
+      w * 0.95, h * 0.40, // control 2 (Neck - wider and higher)
+      w * 0.5, 0          // back to top
     );
-
-    // Sağ yan
-    dropPath.cubicTo(
-      w * 0.98, h * 0.55, // sağ gövde genişlik
-      w * 0.85, h * 0.18, // sağ üst kontrol
-      w * 0.52, 0, // tepe
-    );
-
     dropPath.close();
 
-    // Arka plan rengi (boş kısım) - slightly lighter version of selected color
+    // ==== 2. ARKA PLAN (Boş Kısım) ====
+    // Gradient stroke for the container for a premium look
+    final Paint borderPaint = Paint()
+      ..color = Colors.grey.withOpacity(0.1)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    
     final Paint bgPaint = Paint()
-      ..color = waterColor.withOpacity(0.3) // Dynamic bg color
+      ..color = Colors.grey.withOpacity(0.05)
       ..style = PaintingStyle.fill;
 
     canvas.drawPath(dropPath, bgPaint);
+    canvas.drawPath(dropPath, borderPaint);
 
-    // === SU DOLU KISIM (soft & tatlı fill efekti) ===
+    // ==== 3. SU DOLU KISIM (Glossy Gradient) ====
     canvas.save();
     canvas.clipPath(dropPath);
 
     final double clamped = progress.clamp(0.0, 1.0);
+    // Calculate water level (bottom up)
+    final double levelY = h * (1.0 - clamped);
 
-    // Damla biraz aşağı taştığı için (h * 1.15) ile hesap
-    final double levelY = (h * 1.15) * (1.0 - clamped);
-
-    // Su dalgasının genişliği ve yüksekliği (yumuşak, küçük bir kavis)
-    final double leftX = -w * 0.2;
-    final double rightX = w * 1;
-    final double bottomY = h * 1.2;
-    final double midX = (leftX + rightX) / 2;
-
-    // progress yükseldikçe dalga biraz daha düzleşsin (çok oynamasın)
-    final double baseWave = 6.0;
-    final double waveHeight = baseWave * (1.0 - clamped);
-
-    final Path waterPath = Path()
-      ..moveTo(leftX, bottomY)
-      ..lineTo(leftX, levelY)
-      ..quadraticBezierTo(
-        midX, levelY - waveHeight, // ortada hafif yukarı bombeli
-        rightX, levelY,
-      )
-      ..lineTo(rightX, bottomY)
-      ..close();
-
-    // Gradient ile daha soft görünüm
-    final Rect waterBounds =
-        Rect.fromLTRB(leftX, levelY - waveHeight, rightX, bottomY);
-
+    // Düz bir su seviyesi yerine hafif dalgalı veya düz seçenek
+    // Reference image is static, so let's make it a flat fill with gradient to look like the icon when full
+    // But since it is a progress bar, we fill up to levelY.
+    
+    final Rect fillRect = Rect.fromLTRB(0, levelY, w, h);
+    
     final Paint waterPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          waterColor.withOpacity(0.7), // üst kısım daha açık
-          waterColor, // alt kısım ana renk
+          Color.lerp(waterColor, Colors.white, 0.4)!, // Lighter top
+          waterColor, // Main color at bottom
         ],
-      ).createShader(waterBounds);
+      ).createShader(Rect.fromLTRB(0, 0, w, h)); // Gradient over full height for consistency
 
-    canvas.drawPath(waterPath, waterPaint);
+    // Draw the water rect (clipped to path)
+    canvas.drawRect(fillRect, waterPaint);
 
     canvas.restore();
 
-    // === BEYAZ PARLAMA (Highlight) ===
+    // ==== 4. PARLAMA (Reflection/Glitch) ====
+    // White pill/crescent on the bottom-left as per image
+    final Path highlightPath = Path();
+    // A simple curved line on the bottom left
+    highlightPath.moveTo(w * 0.25, h * 0.65);
+    highlightPath.quadraticBezierTo(
+      w * 0.22, h * 0.75, 
+      w * 0.35, h * 0.82
+    );
+
     final Paint highlightPaint = Paint()
-      ..color = Colors.white.withOpacity(0.7)
+      ..color = Colors.white.withOpacity(0.4)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4
+      ..strokeWidth = 6
       ..strokeCap = StrokeCap.round;
 
-    final Path highlightPath = Path()
-      ..moveTo(w * 0.2, h * 0.70)
-      ..quadraticBezierTo(
-        w * 0.30, h * 0.92,
-        w * 0.55, h * 0.92,
-      );
-
     canvas.drawPath(highlightPath, highlightPaint);
+    
+    // Extra subtle shine on top right
+    final Paint topShinePaint = Paint()
+      ..color = Colors.white.withOpacity(0.1)
+      ..style = PaintingStyle.fill;
+      
+    canvas.drawCircle(Offset(w * 0.7, h * 0.3), w * 0.1, topShinePaint);
   }
 
   @override
@@ -290,18 +278,14 @@ class _SplashPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final maxR = size.width * 0.42;
+    final maxR = size.width * 0.5;
 
     final Paint ring = Paint()
-      ..color = color.withOpacity((1 - t).clamp(0.0, 1.0))
+      ..color = color.withOpacity((1 - t).clamp(0.0, 0.4))
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.0 * (1 - t).clamp(0.3, 1.0);
+      ..strokeWidth = 4.0 * (1 - t);
 
-    final double r1 = maxR * t;
-    final double r2 = maxR * (t * 0.8 + 0.2);
-
-    canvas.drawCircle(center, r1, ring);
-    canvas.drawCircle(center, r2, ring..color = ring.color.withOpacity(ring.color.opacity * 0.8));
+    canvas.drawCircle(center, maxR * t, ring);
   }
 
   @override
