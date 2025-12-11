@@ -226,11 +226,11 @@ class FriendsScreen extends ConsumerWidget {
                                 const SizedBox(height: 10),
                             itemBuilder: (context, index) {
                               final friend = leaderboard[index];
-                              // friend structure depends on API response
-                              // Assuming: { "username": "...", "daily_goal_ml": ..., "today_total_ml": ... }
+                              final id = friend['id']; // Make sure ID is available from API
                               final name = friend['username'] ?? 'Unknown';
                               final goal = friend['daily_goal_ml'] ?? 2000;
-                              final current = friend['total_ml'] ?? 0;
+                              final current = friend['today_total_ml'] ?? 0;
+                              final streak = friend['mutual_streak_days'] ?? 0;
                               final percent = (current / goal).clamp(0.0, 1.0);
 
                               return Container(
@@ -248,6 +248,7 @@ class FriendsScreen extends ConsumerWidget {
                                 ),
                                 child: Row(
                                   children: [
+                                    // Avatar
                                     CircleAvatar(
                                       backgroundColor: Colors.blue.shade50,
                                       child: Text(
@@ -258,16 +259,47 @@ class FriendsScreen extends ConsumerWidget {
                                       ),
                                     ),
                                     const SizedBox(width: 12),
+                                    
+                                    // Info
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            name,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 15),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                name,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 15),
+                                              ),
+                                              if (streak > 0) ...[
+                                                const SizedBox(width: 6),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.orange.shade50,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    border: Border.all(color: Colors.orange.shade200),
+                                                  ),
+                                                  child: Row(
+                                                    children: [
+                                                      const Text('🔥', style: TextStyle(fontSize: 12)),
+                                                      const SizedBox(width: 2),
+                                                      Text(
+                                                        '$streak',
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontWeight: FontWeight.bold,
+                                                          color: Colors.orange.shade700,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                           const SizedBox(height: 4),
                                           ClipRRect(
@@ -284,13 +316,67 @@ class FriendsScreen extends ConsumerWidget {
                                         ],
                                       ),
                                     ),
+                                    
                                     const SizedBox(width: 12),
-                                    Text(
-                                      '${(percent * 100).toInt()}%',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.blueAccent,
-                                      ),
+                                    
+                                    // Actions
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          '${(percent * 100).toInt()}%',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.blueAccent,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        GestureDetector(
+                                          onTap: () async {
+                                           if (user == null) return;
+                                            try {
+                                              await ref.read(friendsProvider.notifier).pokeFriend(user.id, id);
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('👉 Poked $name!'),
+                                                    duration: const Duration(seconds: 2),
+                                                    backgroundColor: Colors.purpleAccent,
+                                                  ),
+                                                );
+                                              }
+                                            } catch (e) {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Failed to poke')),
+                                                );
+                                              }
+                                            }
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.purple.shade50,
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Text('👈', style: TextStyle(fontSize: 12)),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  'Poke',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.purple.shade700,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
