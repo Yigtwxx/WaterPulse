@@ -15,14 +15,11 @@ class FriendsNotifier extends StateNotifier<FriendsState> {
     loadLeaderboard();
   }
 
-  Future<void> loadLeaderboard() async {
+  Future<void> loadLeaderboard([int? userId]) async {
     state = FriendsState(isLoading: true, leaderboard: state.leaderboard);
     try {
-      final data = await _apiClient.compareWithFriends(
-        userId: 1,
-        friendIds: [2, 3], // Mock friend IDs
-        date: DateTime.now(),
-      );
+      final uid = userId ?? 1; // Default to 1 if not provided, or better get from Auth
+      final data = await _apiClient.getFriends(uid);
       state = FriendsState(isLoading: false, leaderboard: data);
     } catch (e) {
       state = FriendsState(isLoading: false, leaderboard: state.leaderboard);
@@ -33,7 +30,15 @@ class FriendsNotifier extends StateNotifier<FriendsState> {
     try {
       await _apiClient.addFriend(userId, friendCode);
       // Reload leaderboard or update list
-      await loadLeaderboard();
+      await loadLeaderboard(userId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+  
+  Future<void> pokeFriend(int senderId, int receiverId) async {
+    try {
+      await _apiClient.pokeFriend(senderId, receiverId);
     } catch (e) {
       rethrow;
     }
