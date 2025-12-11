@@ -34,16 +34,18 @@ class _AmountButtonState extends State<AmountButton> {
     // Text: BlueAccent
     // Border: Neon/Blue
 
+    final primary = Theme.of(context).primaryColor;
+
     final Color bgColor = enabled
-        ? (isDark ? const Color(0xFF1E40AF) : Colors.white) // Darker Blue in Dark Mode
+        ? (isDark ? primary : Colors.white)
         : (isDark ? Colors.grey[800]! : Colors.grey[200]!);
 
     final Color borderColor = enabled
-        ? (isDark ? const Color(0xFF3B82F6) : AppTheme.neonColor)
+        ? primary
         : Colors.grey;
 
     final Color textColor = enabled
-        ? (isDark ? Colors.white : Colors.blueAccent)
+        ? (isDark ? Colors.white : primary)
         : Colors.grey;
 
     return AnimatedScale(
