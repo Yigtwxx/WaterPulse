@@ -74,7 +74,10 @@ class StreakCard extends StatelessWidget {
                       ? '${AppLocalizations.of(context)!.homeToday}: $currentMl / $dailyGoal ml'
                       : '${AppLocalizations.of(context)!.homeToday}: $currentMl ml',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[700], fontWeight: FontWeight.w600),
+                      color: theme.brightness == Brightness.dark 
+                          ? Colors.grey[300] 
+                          : Colors.grey[700], 
+                      fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 12),
                 Text(
