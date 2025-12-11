@@ -39,8 +39,7 @@ class AppTheme {
       primary: Color(0xFF3B82F6), // Blue 500
       secondary: Color(0xFF60A5FA), // Blue 400
       surface: Color(0xFF0F172A), // Deep Blue (Slate 900)
-      background: Color(0xFF020617), // Rich Midnight
-      onBackground: Color(0xFFF1F5F9), // Slate 100
+
       onSurface: Color(0xFFE2E8F0), // Slate 200
       surfaceTint: Color(0xFF3B82F6), // Subtle blue tint on surfaces
     ),
@@ -132,8 +131,7 @@ class AppTheme {
       primary: Color(0xFF10B981),
       secondary: Color(0xFF34D399),
       surface: Color(0xFFECFDF5),
-      background: Color(0xFFD1FAE5),
-      onBackground: Color(0xFF064E3B),
+
       onSurface: Color(0xFF064E3B),
     ),
     appBarTheme: const AppBarTheme(
@@ -167,8 +165,7 @@ class AppTheme {
       primary: Color(0xFF10B981),
       secondary: Color(0xFF34D399),
       surface: Color(0xFF132A20),
-      background: Color(0xFF0D1F16),
-      onBackground: Color(0xFFECFDF5),
+
       onSurface: Color(0xFFD1FAE5),
     ),
     appBarTheme: const AppBarTheme(
@@ -202,8 +199,7 @@ class AppTheme {
       primary: Color(0xFFF97316),
       secondary: Color(0xFFFB923C),
       surface: Color(0xFFFFF7ED),
-      background: Color(0xFFFFEDD5),
-      onBackground: Color(0xFF7C2D12),
+
       onSurface: Color(0xFF7C2D12),
     ),
     appBarTheme: const AppBarTheme(
@@ -237,8 +233,7 @@ class AppTheme {
       primary: Color(0xFFF97316),
       secondary: Color(0xFFFB923C),
       surface: Color(0xFF2D1810),
-      background: Color(0xFF1F120A),
-      onBackground: Color(0xFFFFF7ED),
+
       onSurface: Color(0xFFFFEDD5),
     ),
     appBarTheme: const AppBarTheme(
@@ -272,8 +267,7 @@ class AppTheme {
       primary: Color(0xFFEC4899),
       secondary: Color(0xFFF472B6),
       surface: Color(0xFFFCE7F3),
-      background: Color(0xFFFBCFE8),
-      onBackground: Color(0xFF831843),
+
       onSurface: Color(0xFF831843),
     ),
     appBarTheme: const AppBarTheme(
@@ -307,8 +301,7 @@ class AppTheme {
       primary: Color(0xFFEC4899),
       secondary: Color(0xFFF472B6),
       surface: Color(0xFF2D1520),
-      background: Color(0xFF1F1016),
-      onBackground: Color(0xFFFDF2F8),
+
       onSurface: Color(0xFFFCE7F3),
     ),
     appBarTheme: const AppBarTheme(
@@ -342,8 +335,7 @@ class AppTheme {
       primary: Color(0xFF8B5CF6),
       secondary: Color(0xFFA78BFA),
       surface: Color(0xFFF5F3FF),
-      background: Color(0xFFEDE9FE),
-      onBackground: Color(0xFF4C1D95),
+
       onSurface: Color(0xFF4C1D95),
     ),
     appBarTheme: const AppBarTheme(
@@ -377,8 +369,7 @@ class AppTheme {
       primary: Color(0xFF8B5CF6),
       secondary: Color(0xFFA78BFA),
       surface: Color(0xFF1A1633),
-      background: Color(0xFF0F0B1E),
-      onBackground: Color(0xFFF5F3FF),
+
       onSurface: Color(0xFFEDE9FE),
     ),
     appBarTheme: const AppBarTheme(
