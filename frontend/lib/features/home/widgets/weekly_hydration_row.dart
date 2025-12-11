@@ -80,10 +80,12 @@ class _DayCircle extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final reached = total > 0;
     
-    final borderColor =
-        highlight ? const Color(0xFF2563EB) : Colors.blueAccent;
+    final primary = Theme.of(context).primaryColor;
     
-    // Dark mode: Transparent BG, White Border. Light Mode: White BG, Blue Border.
+    final borderColor =
+        highlight ? primary : primary;
+    
+    // Dark mode: Transparent BG, White Border. Light Mode: White BG, Primary Border.
     final bg = reached
         ? borderColor.withOpacity(0.08)
         : (isDark ? Colors.transparent : Colors.white);
@@ -104,7 +106,7 @@ class _DayCircle extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.blueAccent.withOpacity(0.12),
+            color: primary.withOpacity(0.12),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -118,7 +120,7 @@ class _DayCircle extends StatelessWidget {
             style: TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: 12,
-              color: isDark ? Colors.white : const Color(0xFF1E3A8A),
+              color: isDark ? Colors.white : Theme.of(context).primaryColor,
             ),
           ),
           const SizedBox(height: 2),
@@ -131,7 +133,7 @@ class _DayCircle extends StatelessWidget {
               fontWeight: FontWeight.w600,
               color: isDark 
                   ? Colors.white.withOpacity(0.9) 
-                  : (reached ? const Color(0xFF2563EB) : Colors.grey[500]),
+                  : (reached ? Theme.of(context).primaryColor : Colors.grey[500]),
             ),
           ),
         ],
