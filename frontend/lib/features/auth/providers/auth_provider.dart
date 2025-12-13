@@ -114,4 +114,8 @@ class AuthNotifier extends StateNotifier<AsyncValue<User?>> {
       rethrow;
     }
   }
+
+  Future<void> refreshUser() async {
+    await _checkAuthStatus();
+  }
 }
