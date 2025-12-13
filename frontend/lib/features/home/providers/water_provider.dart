@@ -30,10 +30,10 @@ class WaterNotifier extends StateNotifier<WaterState> {
 
   WaterNotifier(this._apiClient) : super(WaterState());
 
-  Future<void> loadTodayTotal(int userId) async {
+  Future<void> loadTodayTotal(int userId, {DateTime? date}) async {
     state = state.copyWith(isLoading: true);
     try {
-      final total = await _apiClient.getTodayTotal(userId: userId);
+      final total = await _apiClient.getDailyTotal(userId: userId, date: date);
       state = state.copyWith(todayTotal: total, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
