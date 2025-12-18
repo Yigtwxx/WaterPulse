@@ -3,7 +3,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:window_size/window_size.dart' as window_size;
+import 'package:window_manager/window_manager.dart';
 import 'package:waterpulse/config/app_theme.dart';
 import 'package:waterpulse/services/notification_service.dart';
 import 'package:waterpulse/features/settings/providers/theme_provider.dart';
@@ -20,7 +20,8 @@ Future<void> main() async {
 
     try {
       if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-        window_size.setWindowMinSize(const Size(1100, 720));
+          await windowManager.ensureInitialized();
+          await windowManager.setMinimumSize(const Size(1100, 720));
       }
     } catch (e) {
       debugPrint('Error setting window size: $e');
