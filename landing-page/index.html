@@ -1,131 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/app_logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WaterPulse - Master Your Hydration</title>
-    <meta name="description" content="The ultimate hydration tracking app for Windows. Track water intake, visualize stats, and stay healthy." />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="app">
-      <!-- Navbar -->
-      <nav class="navbar">
-        <div class="container nav-container">
-          <a href="#" class="logo">
-            <img src="/app_logo.png" alt="WaterPulse Logo" />
-            <span>WaterPulse</span>
-          </a>
-          <div class="nav-links">
-            <a href="#features">Features</a>
-            <a href="#showcase">Showcase</a>
-            <a href="#download" class="btn btn-primary btn-sm">Download</a>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/app_logo.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WaterPulse - Master Your Hydration</title>
+  <meta name="description"
+    content="The ultimate hydration tracking app for Windows. Track water intake, visualize stats, and stay healthy." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div id="app">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="container nav-container">
+        <a href="#" class="logo">
+          <img src="/app_logo.png" alt="WaterPulse Logo" />
+          <span>WaterPulse</span>
+        </a>
+        <div class="nav-links">
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How it Works</a>
+          <a href="/downloads/WaterPulse-Windows.zip" download="WaterPulse-Windows.zip"
+            class="btn btn-primary btn-sm">Download</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-bg-glow"></div>
+      <div class="container hero-content">
+        <div class="hero-text">
+          <h1 class="hero-title">
+            Hydration <span class="text-gradient">Mastered</span>
+          </h1>
+          <p class="hero-subtitle">
+            Calculates your daily water needs based on your activity. Reminds you to drink. Tracks your progress with
+            beautiful charts.
+          </p>
+          <div class="hero-buttons">
+            <a href="/downloads/WaterPulse-Windows.zip" download="WaterPulse-Windows.zip" id="download-btn"
+              class="btn btn-primary btn-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Download for Windows
+            </a>
+            <a href="#how-it-works" class="btn btn-secondary btn-lg">How it Works</a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat-item">
+              <span class="stat-value">Free</span>
+              <span class="stat-label">Forever</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">Offline</span>
+              <span class="stat-label">Capable</span>
+            </div>
           </div>
         </div>
-      </nav>
-
-      <!-- Hero Section -->
-      <section class="hero">
-        <div class="hero-bg-glow"></div>
-        <div class="container hero-content">
-          <div class="hero-text">
-            <h1 class="hero-title">
-              Hydration <span class="text-gradient">Reimagined</span>
-            </h1>
-            <p class="hero-subtitle">
-              Track your water intake, analyze your habits, and stay healthy with the most advanced hydration companion for Windows.
-            </p>
-            <div class="hero-buttons">
-              <a href="#" id="download-btn" class="btn btn-primary btn-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                Download for Windows
-              </a>
-              <a href="#features" class="btn btn-secondary btn-lg">Learn More</a>
-            </div>
-            <div class="hero-stats">
-              <div class="stat-item">
-                <span class="stat-value">10k+</span>
-                <span class="stat-label">Downloads</span>
+        <div class="hero-image">
+          <div class="app-mockup">
+            <div class="mockup-window">
+              <div class="mockup-header">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
               </div>
-              <div class="stat-item">
-                <span class="stat-value">4.9</span>
-                <span class="stat-label">Rating</span>
-              </div>
-            </div>
-          </div>
-          <div class="hero-image">
-            <div class="app-mockup">
-              <!-- Placeholder for App Screenshot -->
-              <div class="mockup-screen">
-                <div class="water-animation"></div>
-                <img src="/app_logo.png" alt="WaterPulse App" class="floating-logo" />
+              <div class="mockup-body">
+                <!-- Placeholder or actual screenshot if available -->
+                <div class="glass-panel">
+                  <img src="/app_logo.png" alt="WaterPulse" class="app-screenshot-placeholder" />
+                  <div class="floating-badge badge-1">💧 Smart Goals</div>
+                  <div class="floating-badge badge-2">📊 Analytics</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Features Section -->
-      <section id="features" class="features">
-        <div class="container">
-          <div class="section-header">
-            <h2>Why WaterPulse?</h2>
-            <p>Everything you need to build a healthy hydration habit.</p>
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="section">
+      <div class="container">
+        <div class="section-header">
+          <h2>How it Works</h2>
+          <p>Simple steps to a healthier you.</p>
+        </div>
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-number">01</div>
+            <h3>Set Your Profile</h3>
+            <p>Enter your details and let WaterPulse calculate your ideal daily water intake goal.</p>
           </div>
-          <div class="features-grid">
-            <div class="feature-card">
-              <div class="feature-icon">💧</div>
-              <h3>Smart Tracking</h3>
-              <p>Log your water intake with a single click. Customize cup sizes and daily goals.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-icon">📊</div>
-              <h3>Detailed Analytics</h3>
-              <p>Visualize your progress with beautiful charts. Track daily, weekly, and monthly trends.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-icon">🏆</div>
-              <h3>Gamification</h3>
-              <p>Earn badges, maintain streaks, and unlock new avatar skins as you stay hydrated.</p>
-            </div>
+          <div class="step-card">
+            <div class="step-number">02</div>
+            <h3>Log Water</h3>
+            <p>Quickly add water with one click using preset cup sizes or custom amounts.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">03</div>
+            <h3>Track & Analyze</h3>
+            <p>View daily, weekly, and heatmap statistics to understand your hydration habits.</p>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Showcase Section -->
-      <section id="showcase" class="showcase">
-        <div class="container">
-          <div class="section-header">
-            <h2>Beautiful Interface</h2>
-            <p>Designed for clarity, ease of use, and aesthetics.</p>
+    <!-- Features Section -->
+    <section id="features" class="features">
+      <div class="container">
+        <div class="section-header">
+          <h2>Why WaterPulse?</h2>
+          <p>Everything you need to build a healthy hydration habit.</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">💧</div>
+            <h3>Smart Tracking</h3>
+            <p>Log your water intake with a single click. Customize cup sizes and daily goals.</p>
           </div>
-          <div class="showcase-content">
-            <div class="showcase-card glass">
-              <h3>Dark Mode</h3>
-              <p>Easy on the eyes, perfect for night owls.</p>
-            </div>
-            <div class="showcase-card glass">
-              <h3>Customizable</h3>
-              <p>Adapt the app to your personal workflow.</p>
-            </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Detailed Analytics</h3>
+            <p>Visualize your progress with beautiful charts. Track daily, weekly, and monthly trends.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🏆</div>
+            <h3>Gamification</h3>
+            <p>Earn badges, maintain streaks, and unlock new avatar skins as you stay hydrated.</p>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Footer -->
-      <footer class="footer">
-        <div class="container footer-content">
-          <div class="footer-logo">
-            <img src="/app_logo.png" alt="Logo" width="32" />
-            <span>WaterPulse</span>
-          </div>
-          <p class="copyright">&copy; 2024 WaterPulse. All rights reserved.</p>
+    <!-- Showcase Section -->
+    <section id="showcase" class="showcase">
+      <div class="container">
+        <div class="section-header">
+          <h2>Beautiful Interface</h2>
+          <p>Designed for clarity, ease of use, and aesthetics.</p>
         </div>
-      </footer>
-    </div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+        <div class="showcase-content">
+          <div class="showcase-card glass">
+            <h3>Dark Mode</h3>
+            <p>Easy on the eyes, perfect for night owls.</p>
+          </div>
+          <div class="showcase-card glass">
+            <h3>Customizable</h3>
+            <p>Adapt the app to your personal workflow.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container footer-content">
+        <div class="footer-logo">
+          <img src="/app_logo.png" alt="Logo" width="32" />
+          <span>WaterPulse</span>
+        </div>
+        <p class="copyright">&copy; 2024 WaterPulse. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
 </html>
