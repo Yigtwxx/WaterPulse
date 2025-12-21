@@ -1,4 +1,4 @@
-from backend.tests.test_base import get_test_client
+from tests.test_base import get_test_client
 
 
 def test_add_water_log_and_total():
