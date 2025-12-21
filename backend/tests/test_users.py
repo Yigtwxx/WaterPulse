@@ -1,5 +1,5 @@
 from app.models import user as user_model
-from backend.tests.test_base import get_test_client
+from tests.test_base import get_test_client
 
 
 def test_create_and_get_user():
