@@ -16,7 +16,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _isHoverLogin = false;
-  bool _isHoverGoogle = false;
+
   bool _isHoverGuest = false;
   bool _isHoverRegister = false;
 
@@ -138,6 +138,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           elevation: _isHoverLogin ? 4 : 0,
+                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                         ),
                         child: _isLoading
                             ? const SizedBox(
@@ -145,37 +146,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 width: 20,
                                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               )
-                            : const Text('Login', style: TextStyle(fontSize: 16)),
+                            : const Text('Login'),
                       ),
                     ),
                     const SizedBox(height: 16),
                     
-                    // Google Sign-In Button
-                    _hoverLift(
-                      isHover: _isHoverGoogle,
-                      onHover: (value) => setState(() => _isHoverGoogle = value),
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Google Sign-In not implemented yet')),
-                          );
-                        },
-                        icon: Image.network(
-                          'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png',
-                          height: 24,
-                          width: 24,
-                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.g_mobiledata, size: 24),
-                        ),
-                        label: const Text('Continue with Google'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: _isHoverGoogle ? 2 : 0,
-                        ),
-                      ),
-                    ),
+                    // Google Sign-In Button Removed
+
                     const SizedBox(height: 12),
 
                     // Guest Mode Button
