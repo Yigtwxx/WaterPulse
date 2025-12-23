@@ -1,7 +1,9 @@
 import './style.css'
+import { initBackground } from './background.ts'
 
 // Simple interaction logic
 document.addEventListener('DOMContentLoaded', () => {
+  initBackground();
   console.log('WaterPulse Landing Page Loaded');
 
   const downloadBtn = document.getElementById('download-btn');
