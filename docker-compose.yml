@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: waterpulse-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PROJECT_NAME=WaterPulse API
+      # Add other environment variables here if needed
+      # - DATABASE_URL=postgresql://user:password@db:5432/waterpulse
+    volumes:
+      # Mount the local directory to the container for development (optional)
+      # This allows live reloading if you run uvicorn with --reload
+      - ./backend:/app
+    restart: unless-stopped

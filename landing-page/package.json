@@ -1,5 +1,5 @@
 {
-  "name": "landing-page",
+  "name": "waterpulse-landing",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,5 +11,9 @@
   "devDependencies": {
     "typescript": "~5.9.3",
     "vite": "^7.2.4"
+  },
+  "dependencies": {
+    "@types/three": "^0.181.0",
+    "three": "^0.181.2"
   }
 }

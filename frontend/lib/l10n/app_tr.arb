@@ -84,5 +84,18 @@
   "achEarlyBirdDesc": "Sabah 8:00'den önce su iç",
   "achNightOwlDesc": "Gece 22:00'den sonra su iç",
   "achWeekendWarriorDesc": "Cumartesi ve Pazar hedefine ulaş",
-  "achMarathonDesc": "Bir günde 3 Litre su iç"
+  "achMarathonDesc": "Bir günde 3 Litre su iç",
+  "achHippo": "Su Aygırı 🦛",
+  "achHippoDesc": "Bir günde 4 Litre su iç",
+  "achTsunami": "Tsunami Terbiyecisi 🌊",
+  "achTsunamiDesc": "Bir günde 5 Litre su iç",
+  "achSocial1": "Sosyalleşen Damla 🦋",
+  "achSocial1Desc": "İlk arkadaşını ekle",
+  "achSocial5": "Tayfa Kuruldu 👯",
+  "achSocial5Desc": "5 arkadaş ekle",
+  "achFriendStreak3": "Ayrılmaz İkili ⚡",
+  "achFriendStreak3Desc": "Bir arkadaşınla 3 günlük seri yap",
+  "loggedOutSuccess": "Hesaptan başarıyla çıkış yapıldı",
+  "waterColor": "Su Damlası Rengi",
+  "waterColorSubtitle": "Su damlanızın rengini seçin."
 }

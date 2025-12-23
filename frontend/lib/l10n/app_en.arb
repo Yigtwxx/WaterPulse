@@ -84,5 +84,18 @@
   "achEarlyBirdDesc": "Drink water before 8:00 AM",
   "achNightOwlDesc": "Drink water after 10:00 PM",
   "achWeekendWarriorDesc": "Reach your goal on Saturday & Sunday",
-  "achMarathonDesc": "Drink 3 Liters in a single day"
+  "achMarathonDesc": "Drink 3 Liters in a single day",
+  "achHippo": "Hydration Hippo 🦛",
+  "achHippoDesc": "Drink 4 Liters in a single day",
+  "achTsunami": "Tsunami Tamer 🌊",
+  "achTsunamiDesc": "Drink 5 Liters in a single day",
+  "achSocial1": "Social Butterfly 🦋",
+  "achSocial1Desc": "Add your first friend",
+  "achSocial5": "Squad Goals 👯",
+  "achSocial5Desc": "Add 5 friends",
+  "achFriendStreak3": "Dynamic Duo ⚡",
+  "achFriendStreak3Desc": "Keep a 3-day streak with a friend",
+  "loggedOutSuccess": "Account successfully logged out",
+  "waterColor": "Water Drop Color",
+  "waterColorSubtitle": "Choose the color of your hydration drop."
 }
