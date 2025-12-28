@@ -38,6 +38,7 @@ The WaterPulse mobile application provides a native performance across both iOS 
 
 ---
 
+
 ## 📂 Project Structure
 
 A high-level overview of the codebase organization:
